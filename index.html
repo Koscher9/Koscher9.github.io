@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mein Weg zum Praxissemester – Elektrotechnik</title>
+    <title>Meine Übersicht – Links & Projekte</title>
     <meta
       name="description"
-      content="Persönliche Seite eines Elektrotechnik-Studenten auf dem Weg zum Praxissemester in Regensburg."
+      content="Persönliche Übersicht mit Links und Projekten."
     />
     <style>
       :root {
@@ -41,7 +41,7 @@
       }
 
       main {
-        max-width: 1100px;
+        max-width: 720px;
         margin: 0 auto;
         padding: 1.5rem 1.25rem 4rem;
       }
@@ -53,523 +53,279 @@
       }
 
       header {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        backdrop-filter: blur(18px);
-        background: linear-gradient(
-          to bottom,
-          rgba(15, 23, 42, 0.96),
-          rgba(15, 23, 42, 0.9),
-          transparent
-        );
-        border-bottom: 1px solid rgba(30, 64, 175, 0.3);
+        padding: 1.5rem 1.25rem 0.8rem;
       }
 
-      .nav-inner {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 0.75rem 1.25rem;
+      .profile {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
+        text-align: center;
+        gap: 0.9rem;
       }
 
-      .logo {
-        display: flex;
-        align-items: center;
-        gap: 0.7rem;
-      }
-
-      .logo-icon {
-        width: 32px;
-        height: 32px;
+      .avatar {
+        width: 88px;
+        height: 88px;
         border-radius: 999px;
-        background: radial-gradient(circle at 30% 10%, #bbf7d0, #22c55e 40%);
-        box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.6),
-          0 16px 32px rgba(5, 150, 105, 0.8);
+        background: radial-gradient(circle at 30% 10%, #e5e7eb, #22c55e 55%);
+        border: 3px solid rgba(34, 197, 94, 0.8);
+        box-shadow: 0 18px 35px rgba(15, 23, 42, 0.9);
         position: relative;
         overflow: hidden;
       }
 
-      .logo-icon::after {
+      .avatar::after {
         content: "";
         position: absolute;
-        inset: 28%;
+        inset: 30%;
         border-radius: inherit;
-        border: 2px solid rgba(15, 23, 42, 0.8);
-        transform: rotate(-20deg);
+        border: 2px solid rgba(15, 23, 42, 0.7);
+        transform: rotate(-18deg);
       }
 
-      .logo-text-main {
+      .name {
+        font-size: 1.4rem;
         font-weight: 600;
         letter-spacing: 0.02em;
-        font-size: 0.95rem;
       }
 
-      .logo-text-sub {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-      }
-
-      nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
+      .tagline {
         font-size: 0.9rem;
-      }
-
-      nav a {
         color: var(--text-muted);
-        text-decoration: none;
-        padding: 0.32rem 0.75rem;
+        max-width: 26rem;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.4rem;
+        margin-top: 0.1rem;
+      }
+
+      .pill {
+        font-size: 0.78rem;
         border-radius: 999px;
-        border: 1px solid transparent;
-        transition: all 0.18s ease-out;
+        padding: 0.25rem 0.7rem;
+        border: 1px solid rgba(55, 65, 81, 0.9);
+        background: rgba(15, 23, 42, 0.95);
+        color: var(--text-muted);
       }
 
-      nav a:hover {
-        color: var(--text-main);
-        border-color: rgba(148, 163, 184, 0.7);
-        background: rgba(15, 23, 42, 0.96);
-      }
-
-      .nav-highlight {
-        border-color: rgba(34, 197, 94, 0.6);
+      .pill-strong {
+        border-color: rgba(34, 197, 94, 0.8);
         color: #bbf7d0;
-        background: radial-gradient(
-            circle at top left,
-            rgba(74, 222, 128, 0.3),
-            transparent 55%
-          ),
-          rgba(21, 128, 61, 0.48);
+        background: rgba(22, 163, 74, 0.52);
+      }
+
+      .hero-links {
+        margin-top: 1.4rem;
       }
 
       .hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1.5fr);
-        gap: 2.4rem;
-        padding-top: 2.4rem;
-      }
-
-      @media (min-width: 900px) {
-        .hero {
-          grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.3fr);
-          align-items: center;
-        }
-      }
-
-      .hero-intro-eyebrow {
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.18em;
-        color: var(--accent);
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .hero-intro-eyebrow::before {
-        content: "";
-        width: 28px;
-        height: 1px;
-        background: linear-gradient(
-          to right,
-          transparent,
-          rgba(52, 211, 153, 0.9)
-        );
-      }
-
-      .hero-title {
-        font-size: clamp(2.2rem, 3vw + 1.7rem, 3rem);
-        letter-spacing: 0.02em;
-        margin: 0.7rem 0 0.4rem;
-      }
-
-      .hero-title span {
-        background: linear-gradient(to right, #bbf7d0, #4ade80);
-        -webkit-background-clip: text;
-        color: transparent;
-      }
-
-      .hero-subtitle {
-        font-size: 0.95rem;
-        color: var(--text-muted);
-        max-width: 32rem;
-        line-height: 1.7;
-      }
-
-      .hero-subtitle strong {
-        color: #e5e7eb;
-        font-weight: 500;
-      }
-
-      .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.8rem;
-        margin-top: 1.7rem;
+        margin-top: 1.2rem;
       }
 
       .btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.45rem;
-        padding: 0.65rem 1.1rem;
+        gap: 0.4rem;
+        padding: 0.7rem 1.1rem;
         border-radius: 999px;
-        border: 1px solid transparent;
+        border: 1px solid rgba(55, 65, 81, 0.9);
         font-size: 0.9rem;
         cursor: pointer;
         text-decoration: none;
-        transition: transform 0.16s ease-out, box-shadow 0.16s ease-out,
-          background 0.16s ease-out, border-color 0.16s ease-out;
+        transition: transform 0.14s ease-out, box-shadow 0.14s ease-out,
+          background 0.14s ease-out, border-color 0.14s ease-out;
+        background: rgba(15, 23, 42, 0.95);
+        color: var(--text-main);
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(148, 163, 184, 0.9);
+        box-shadow: 0 16px 30px rgba(15, 23, 42, 0.9);
       }
 
       .btn-primary {
         background: linear-gradient(135deg, #22c55e, #16a34a);
         color: #022c22;
+        border-color: rgba(34, 197, 94, 0.8);
         box-shadow: 0 18px 35px rgba(34, 197, 94, 0.4);
       }
 
       .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 24px 45px rgba(34, 197, 94, 0.55);
-      }
-
-      .btn-ghost {
-        color: var(--text-main);
-        border-color: rgba(148, 163, 184, 0.6);
-        background: rgba(15, 23, 42, 0.8);
-      }
-
-      .btn-ghost:hover {
-        background: rgba(15, 23, 42, 1);
-        transform: translateY(-1px);
+        box-shadow: 0 22px 40px rgba(34, 197, 94, 0.55);
       }
 
       .btn-icon {
         font-size: 1rem;
       }
 
-      .hero-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.2rem;
-        margin-top: 1.6rem;
-        font-size: 0.83rem;
-        color: var(--text-muted);
-      }
-
-      .hero-meta-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.45rem 0.8rem;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.9);
-        border: 1px solid rgba(31, 41, 55, 0.8);
-      }
-
-      .hero-meta-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: radial-gradient(circle at 30% 10%, #bbf7d0, #22c55e 60%);
-        box-shadow: 0 0 12px rgba(34, 197, 94, 0.9);
-      }
-
-      .hero-figure {
-        border-radius: 26px;
-        background: radial-gradient(circle at top, #1e293b 0, #020617 55%);
-        border: 1px solid rgba(51, 65, 85, 0.8);
-        box-shadow: var(--shadow-soft);
-        padding: 1.4rem 1.5rem 1.2rem;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .hero-figure-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.7rem;
-      }
-
-      .tag {
-        font-size: 0.75rem;
-        padding: 0.35rem 0.7rem;
-        border-radius: 999px;
-        border: 1px solid rgba(148, 163, 184, 0.4);
-        color: var(--text-muted);
-        background: rgba(15, 23, 42, 0.9);
-        text-align: center;
-      }
-
-      .tag-strong {
-        border-color: rgba(34, 197, 94, 0.7);
-        color: #bbf7d0;
-        background: rgba(22, 163, 74, 0.5);
-      }
-
-      .hero-figure-label {
-        position: absolute;
-        inset: auto 1.4rem 1.2rem auto;
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        background: rgba(15, 23, 42, 0.9);
-        padding: 0.45rem 0.8rem;
-        border-radius: 999px;
-        border: 1px solid rgba(55, 65, 81, 0.8);
-        backdrop-filter: blur(12px);
-      }
-
       section {
-        margin-top: 3.2rem;
+        margin-top: 2rem;
       }
 
       .section-title {
-        font-size: 1.2rem;
-        margin-bottom: 0.4rem;
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
       }
 
       .section-subtitle {
-        font-size: 0.9rem;
+        font-size: 0.86rem;
         color: var(--text-muted);
+        margin-bottom: 0.7rem;
       }
 
       .panel {
-        margin-top: 1.2rem;
+        margin-top: 0.4rem;
         background: radial-gradient(circle at top left, #020617, #020617 55%);
         border-radius: var(--card-radius);
         border: 1px solid var(--border-subtle);
-        padding: 1.25rem 1.4rem;
+        padding: 1.1rem 1.2rem;
         box-shadow: var(--shadow-soft);
       }
 
-      .panel + .panel {
-        margin-top: 1rem;
-      }
-
-      .about-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.4fr);
-        gap: 1.4rem;
-      }
-
-      @media (min-width: 900px) {
-        .about-grid {
-          grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.3fr);
-        }
-      }
-
-      .about-text {
-        font-size: 0.95rem;
-        color: var(--text-muted);
-        line-height: 1.8;
-      }
-
-      .about-text p {
-        margin: 0 0 0.9rem;
-      }
-
-      .about-highlights {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.8rem;
-        font-size: 0.85rem;
-      }
-
-      @media (min-width: 600px) {
-        .about-highlights {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
-
-      .chip {
-        padding: 0.5rem 0.7rem;
-        border-radius: 12px;
-        background: rgba(15, 23, 42, 0.95);
-        border: 1px solid rgba(55, 65, 81, 0.85);
-      }
-
-      .chip-label {
-        font-size: 0.76rem;
-        text-transform: uppercase;
-        letter-spacing: 0.16em;
-        color: var(--text-muted);
-        margin-bottom: 0.15rem;
-      }
-
-      .chip-main {
-        font-size: 0.88rem;
-      }
-
-      .timeline {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 1rem;
-        margin-top: 0.6rem;
-      }
-
-      @media (min-width: 750px) {
-        .timeline {
-          grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-        }
-      }
-
-      .timeline-list {
-        border-left: 1px solid rgba(55, 65, 81, 0.9);
-        padding-left: 1.2rem;
-        margin-left: 0.5rem;
-      }
-
-      .timeline-item {
-        position: relative;
-        padding-bottom: 0.9rem;
-        margin-bottom: 0.4rem;
-      }
-
-      .timeline-item:last-child {
-        padding-bottom: 0;
-        margin-bottom: 0;
-      }
-
-      .timeline-dot {
-        position: absolute;
-        left: -1.3rem;
-        top: 0.2rem;
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        background: radial-gradient(circle at 30% 10%, #bbf7d0, #22c55e 60%);
-        box-shadow: 0 0 12px rgba(34, 197, 94, 0.95);
-      }
-
-      .timeline-title {
-        font-size: 0.95rem;
-        margin-bottom: 0.1rem;
-      }
-
-      .timeline-meta {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        margin-bottom: 0.25rem;
-      }
-
-      .timeline-text {
-        font-size: 0.87rem;
-        color: var(--text-muted);
-      }
-
-      .timeline-focus {
-        background: var(--accent-soft);
-        border-radius: 12px;
-        padding: 0.85rem 0.9rem;
-        border: 1px solid rgba(34, 197, 94, 0.7);
-        font-size: 0.86rem;
-      }
-
-      .skills-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 1rem;
-        font-size: 0.86rem;
-      }
-
-      @media (min-width: 700px) {
-        .skills-grid {
-          grid-template-columns: 1.3fr 1fr;
-        }
-      }
-
-      .skills-columns {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.7rem;
-      }
-
-      .skills-list {
-        list-style: none;
-        padding: 0;
-        margin: 0.3rem 0 0;
+      .links-list {
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
+        flex-direction: column;
+        gap: 0.6rem;
+        margin: 0.2rem 0 0;
       }
 
-      .skills-list li {
-        padding: 0.28rem 0.65rem;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.96);
+      .link-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        padding: 0.65rem 0.85rem;
+        border-radius: 12px;
         border: 1px solid rgba(55, 65, 81, 0.9);
-      }
-
-      .goals-list {
-        list-style: none;
-        padding-left: 0;
-        margin: 0.4rem 0 0;
-      }
-
-      .goals-list li {
-        display: flex;
-        gap: 0.45rem;
-        margin-bottom: 0.4rem;
-        color: var(--text-muted);
-      }
-
-      .goals-bullet {
-        font-size: 1rem;
-        line-height: 1.2;
-        color: var(--accent);
-      }
-
-      .contact-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.2fr);
-        gap: 1rem;
+        background: rgba(15, 23, 42, 0.96);
+        text-decoration: none;
+        color: var(--text-main);
+        transition: transform 0.14s ease-out, box-shadow 0.14s ease-out,
+          border-color 0.14s ease-out, background 0.14s ease-out;
         font-size: 0.9rem;
       }
 
-      @media (min-width: 750px) {
-        .contact-grid {
-          grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-        }
+      .link-item:hover {
+        transform: translateY(-1px);
+        border-color: rgba(148, 163, 184, 0.9);
+        box-shadow: 0 16px 30px rgba(15, 23, 42, 0.9);
+        background: rgba(15, 23, 42, 1);
       }
 
-      .contact-line {
+      .link-main {
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
-        margin-bottom: 0.6rem;
+        gap: 0.1rem;
       }
 
-      .contact-label {
+      .link-title {
+        font-weight: 500;
+      }
+
+      .link-desc {
         font-size: 0.8rem;
         color: var(--text-muted);
       }
 
-      .contact-value {
-        font-size: 0.92rem;
-      }
-
-      .contact-hint {
-        font-size: 0.8rem;
+      .link-pill {
+        font-size: 0.75rem;
+        border-radius: 999px;
+        padding: 0.18rem 0.65rem;
+        border: 1px solid rgba(55, 65, 81, 0.9);
         color: var(--text-muted);
-        margin-top: 0.8rem;
+        background: rgba(15, 23, 42, 0.96);
       }
 
-      .contact-note {
+      .link-pill-primary {
+        border-color: rgba(34, 197, 94, 0.9);
+        color: #bbf7d0;
+        background: rgba(22, 163, 74, 0.6);
+      }
+
+      .projects-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+        margin-top: 0.3rem;
+      }
+
+      .project-card {
+        padding: 0.75rem 0.9rem;
+        border-radius: 14px;
+        border: 1px solid rgba(55, 65, 81, 0.9);
+        background: rgba(15, 23, 42, 0.96);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .project-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.6rem;
+        align-items: center;
+      }
+
+      .project-title {
+        font-size: 0.95rem;
+        font-weight: 500;
+      }
+
+      .project-meta {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+      }
+
+      .project-actions {
+        margin-top: 0.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .project-btn {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        border: 1px solid rgba(55, 65, 81, 0.9);
+        background: rgba(15, 23, 42, 0.96);
+        color: var(--text-main);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: background 0.14s ease-out, border-color 0.14s ease-out,
+          transform 0.14s ease-out;
+      }
+
+      .project-btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(148, 163, 184, 0.9);
+        background: rgba(15, 23, 42, 1);
+      }
+
+      .project-btn-primary {
+        border-color: rgba(34, 197, 94, 0.9);
+        background: rgba(22, 163, 74, 0.6);
+        color: #bbf7d0;
+      }
+
+      .notes {
         font-size: 0.82rem;
         color: var(--text-muted);
+        margin-top: 0.6rem;
       }
 
       footer {
-        margin-top: 3rem;
-        padding-top: 1.6rem;
+        margin-top: 2.4rem;
+        padding-top: 1.4rem;
         border-top: 1px solid rgba(31, 41, 55, 0.9);
         font-size: 0.78rem;
         color: var(--text-muted);
@@ -599,361 +355,145 @@
   </head>
   <body>
     <header>
-      <div class="nav-inner">
-        <div class="logo">
-          <div class="logo-icon"></div>
-          <div>
-            <div class="logo-text-main">Mein Weg zum Praxissemester</div>
-            <div class="logo-text-sub">Elektrotechnik – Regensburg</div>
-          </div>
+      <div class="profile">
+        <div class="avatar"></div>
+        <div>
+          <div class="name">Mein persönlicher Überblick</div>
+          <p class="tagline">
+            Eine zentrale Seite für meine wichtigsten Links und Projekte – eine
+            Art persönlicher Linktree.
+          </p>
         </div>
-        <nav aria-label="Hauptnavigation">
-          <ul>
-            <li><a href="#about">Über mich</a></li>
-            <li><a href="#weg">Mein Weg</a></li>
-            <li><a href="#skills">Kenntnisse</a></li>
-            <li><a href="#kontakt" class="nav-highlight">Kontakt</a></li>
-          </ul>
-        </nav>
+        <div class="pill-row">
+          <span class="pill pill-strong">Elektrotechnik-Student</span>
+          <span class="pill">Projekte zum Ausprobieren</span>
+          <span class="pill">Wächst mit der Zeit</span>
+        </div>
       </div>
     </header>
 
     <main>
-      <section class="hero" aria-labelledby="hero-title">
-        <div>
-          <div class="hero-intro-eyebrow">
-            Praxissemester Elektrotechnik · Regensburg
+      <section class="hero">
+        <div class="hero-links">
+          <a href="#links" class="btn btn-primary">
+            <span>Zu meinen Links</span>
+            <span class="btn-icon">↓</span>
+          </a>
+          <span style="margin-left: 0.5rem"></span>
+          <a href="#projekte" class="btn">
+            <span>Zu meinen Projekten</span>
+          </a>
+        </div>
+      </section>
+
+      <section id="links" aria-labelledby="links-title">
+        <h2 id="links-title" class="section-title">Wichtige Links</h2>
+        <p class="section-subtitle">
+          Hier kannst du später alles sammeln, was zu dir gehört: GitHub, LinkedIn,
+          Hochschule, Lebenslauf und mehr.
+        </p>
+
+        <div class="panel">
+          <div class="links-list">
+            <a class="link-item" href="#" target="_blank" rel="noopener">
+              <div class="link-main">
+                <span class="link-title">Mein GitHub-Profil</span>
+                <span class="link-desc">
+                  Platzhalter – hier später deinen richtigen GitHub-Link
+                  eintragen.
+                </span>
+              </div>
+              <span class="link-pill link-pill-primary">GitHub</span>
+            </a>
+
+            <a class="link-item" href="#" target="_blank" rel="noopener">
+              <div class="link-main">
+                <span class="link-title">Mein LinkedIn-/Xing-Profil</span>
+                <span class="link-desc">
+                  Ebenfalls nur ein Platzhalter – kann beliebig ersetzt werden.
+                </span>
+              </div>
+              <span class="link-pill">Profil</span>
+            </a>
+
+            <a class="link-item" href="#" target="_blank" rel="noopener">
+              <div class="link-main">
+                <span class="link-title">Sonstiger Link</span>
+                <span class="link-desc">
+                  Zum Beispiel Hochschule, Portfolio, Lebenslauf oder etwas ganz
+                  anderes.
+                </span>
+              </div>
+              <span class="link-pill">Flexibel</span>
+            </a>
           </div>
-          <h1 id="hero-title" class="hero-title">
-            Ich bin
-            <span>Elektrotechnik-Student</span>
-            auf dem Weg ins Praxissemester.
-          </h1>
-          <p class="hero-subtitle">
-            Auf dieser Seite zeige ich meinen Weg
-            <strong>vom Studium über Projekte bis zur Bewerbung</strong>
-            – mit dem Ziel, mein Praxissemester in Regensburg zu absolvieren.
+          <p class="notes">
+            Zum Anpassen einfach in der
+            <strong>`index.html`</strong>
+            diese Links suchen und die
+            <code>href="#"</code>
+            sowie Texte ändern.
           </p>
-
-          <div class="hero-actions">
-            <a href="#weg" class="btn btn-primary">
-              <span>Weg zur Bewerbung ansehen</span>
-              <span class="btn-icon">↓</span>
-            </a>
-            <a href="#kontakt" class="btn btn-ghost">
-              <span>Für Praxissemester kontaktieren</span>
-            </a>
-          </div>
-
-          <div class="hero-meta" aria-label="Kurzinfo">
-            <div class="hero-meta-item">
-              <span class="hero-meta-dot"></span>
-              <span>Studium Elektrotechnik (Bachelor)</span>
-            </div>
-            <div class="hero-meta-item">
-              <span>Schwerpunkt: Energie / Automatisierung</span>
-            </div>
-            <div class="hero-meta-item">
-              <span>Praxissemester-Zeitraum: nach Absprache</span>
-            </div>
-          </div>
-        </div>
-
-        <aside class="hero-figure" aria-label="Kurzübersicht">
-          <div class="hero-figure-grid">
-            <div class="tag tag-strong">Motiviert, in Regensburg einzusteigen</div>
-            <div class="tag">Elektrotechnik-Bachelor</div>
-            <div class="tag">Praxissemester gesucht</div>
-            <div class="tag">Teamfähig &amp; lernbereit</div>
-            <div class="tag">Interesse an Praxisprojekten</div>
-            <div class="tag">Offen für neue Technologien</div>
-          </div>
-          <div class="hero-figure-label">
-            Diese Seite ersetzt keine vollständige Bewerbung, gibt aber
-            <strong>einen kompakten Überblick</strong>.
-          </div>
-        </aside>
-      </section>
-
-      <section id="about" aria-labelledby="about-title">
-        <h2 id="about-title" class="section-title">Über mich</h2>
-        <p class="section-subtitle">
-          Wer ich bin, was ich studiere und warum mich das Praxissemester in
-          Regensburg besonders interessiert.
-        </p>
-
-        <div class="panel about-grid">
-          <div class="about-text">
-            <p>
-              Ich studiere Elektrotechnik im Bachelor und möchte mein Wissen nun
-              im Rahmen eines
-              <strong>Praxissemesters in Regensburg</strong>
-              anwenden und vertiefen. Besonders spannend finde ich, wie sich
-              theoretische Inhalte aus Vorlesungen in
-              <strong>konkrete technische Lösungen</strong>
-              verwandeln.
-            </p>
-            <p>
-              Im Studium habe ich mich unter anderem mit
-              <strong>Schaltungstechnik, Messtechnik, Regelungstechnik</strong>
-              und
-              <strong>digitaler Signalverarbeitung</strong>
-              beschäftigt. Ergänzend dazu interessiere ich mich für praktische
-              Projekte, bei denen Hardware und Software zusammenkommen.
-            </p>
-            <p>
-              Für mein Praxissemester suche ich eine Stelle, bei der ich
-              <strong>mitarbeiten, mitdenken und mitlernen</strong>
-              kann – idealerweise in einem Umfeld, das Verantwortung überträgt
-              und mich gleichzeitig unterstützt, mich fachlich und persönlich
-              weiterzuentwickeln.
-            </p>
-          </div>
-          <div class="about-highlights">
-            <div class="chip">
-              <div class="chip-label">Studium</div>
-              <div class="chip-main">
-                Elektrotechnik (Bachelor), Fokus auf Energie- und
-                Automatisierungstechnik
-              </div>
-            </div>
-            <div class="chip">
-              <div class="chip-label">Standort</div>
-              <div class="chip-main">
-                Praxissemester in Regensburg oder Umgebung gewünscht
-              </div>
-            </div>
-            <div class="chip">
-              <div class="chip-label">Arbeitsweise</div>
-              <div class="chip-main">
-                Strukturiert, zuverlässig, offen für Feedback und neue Themen
-              </div>
-            </div>
-            <div class="chip">
-              <div class="chip-label">Ziel</div>
-              <div class="chip-main">
-                Theorie aus dem Studium in praxisnahe Projekte einbringen
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
-      <section id="weg" aria-labelledby="weg-title">
-        <h2 id="weg-title" class="section-title">Mein Weg zur Bewerbung</h2>
+      <section id="projekte" aria-labelledby="projekte-title">
+        <h2 id="projekte-title" class="section-title">Meine Projekte</h2>
         <p class="section-subtitle">
-          Vom Studienstart über Projekte bis zur Motivation für ein
-          Praxissemester in Regensburg.
+          Ein kleines Verzeichnis für Spiele, Experimente und andere Ideen. Du
+          kannst hier beliebig viele Projekte ergänzen.
         </p>
 
-        <div class="panel timeline">
-          <div>
-            <div class="timeline-list" aria-label="Zeitleiste Studium und Erfahrungen">
-              <article class="timeline-item">
-                <div class="timeline-dot"></div>
-                <h3 class="timeline-title">Studienstart Elektrotechnik</h3>
-                <div class="timeline-meta">
-                  Grundlagen in Mathematik, Physik und Elektrotechnik
+        <div class="panel">
+          <div class="projects-grid">
+            <article class="project-card">
+              <div class="project-header">
+                <div>
+                  <div class="project-title">Schere, Stein, Papier</div>
+                  <div class="project-meta">
+                    Einfaches Spiel gegen den Computer – direkt im Browser.
+                  </div>
                 </div>
-                <p class="timeline-text">
-                  Einstieg ins Studium mit Fokus auf die
-                  <strong>Grundlagen der Elektrotechnik</strong>
-                  wie Schaltungsanalyse, physikalische Zusammenhänge und erste
-                  Laborversuche.
-                </p>
-              </article>
-
-              <article class="timeline-item">
-                <div class="timeline-dot"></div>
-                <h3 class="timeline-title">Vertiefung &amp; Laborprojekte</h3>
-                <div class="timeline-meta">
-                  Praktische Übungen im Labor und Projektarbeiten
-                </div>
-                <p class="timeline-text">
-                  Arbeit an Laboraufbauten, Messungen und Auswertungen sowie
-                  erste eigene Projektideen – z.&nbsp;B. kleine Steuer- oder
-                  Messsysteme mit Mikrocontrollern.
-                </p>
-              </article>
-
-              <article class="timeline-item">
-                <div class="timeline-dot"></div>
-                <h3 class="timeline-title">Interesse an Praxis in Regensburg</h3>
-                <div class="timeline-meta">
-                  Blick auf Unternehmen &amp; Projekte vor Ort
-                </div>
-                <p class="timeline-text">
-                  Durch Gespräche, Recherchen und Kontakte ist der Wunsch
-                  entstanden, mein
-                  <strong>Praxissemester in Regensburg</strong>
-                  zu absolvieren – in einem Umfeld mit spannenden Projekten,
-                  modernem Umfeld und guter Betreuung.
-                </p>
-              </article>
-
-              <article class="timeline-item">
-                <div class="timeline-dot"></div>
-                <h3 class="timeline-title">Vorbereitung auf die Bewerbung</h3>
-                <div class="timeline-meta">
-                  Unterlagen, Projekte &amp; Ziele sammeln
-                </div>
-                <p class="timeline-text">
-                  Aktuell bereite ich meine Bewerbungsunterlagen vor,
-                  dokumentiere Projekte und formuliere klar, in welchen
-                  Bereichen ich Unternehmen
-                  <strong>konkret unterstützen</strong>
-                  kann.
-                </p>
-              </article>
-            </div>
-          </div>
-
-          <aside class="timeline-focus">
-            <h3 style="margin: 0 0 0.4rem; font-size: 0.95rem">
-              Was Sie auf dieser Seite finden
-            </h3>
-            <p style="margin: 0 0 0.5rem">
-              Diese Seite zeigt:
-            </p>
-            <ul class="goals-list">
-              <li>
-                <span class="goals-bullet">•</span>
-                <span>welches Wissen und welche Motivation ich mitbringe,</span>
-              </li>
-              <li>
-                <span class="goals-bullet">•</span>
-                <span>
-                  in welchen Bereichen der Elektrotechnik ich besonders gern
-                  praktische Erfahrung sammeln möchte,
-                </span>
-              </li>
-              <li>
-                <span class="goals-bullet">•</span>
-                <span>
-                  wie Sie mich für ein Praxissemester in Regensburg erreichen
-                  können.
-                </span>
-              </li>
-            </ul>
-          </aside>
-        </div>
-      </section>
-
-      <section id="skills" aria-labelledby="skills-title">
-        <h2 id="skills-title" class="section-title">
-          Kenntnisse &amp; Interessen
-        </h2>
-        <p class="section-subtitle">
-          Ein Überblick über Themen, mit denen ich mich bereits beschäftigt
-          habe, und Bereiche, in denen ich mich weiterentwickeln möchte.
-        </p>
-
-        <div class="panel skills-grid">
-          <div>
-            <h3 style="font-size: 0.96rem; margin-top: 0">Aktuelle Schwerpunkte</h3>
-            <div class="skills-columns">
-              <div>
-                <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted); margin: 0.7rem 0 0.25rem;">
-                  Elektrotechnik
-                </h4>
-                <ul class="skills-list">
-                  <li>Schaltungs- &amp; Messtechnik</li>
-                  <li>Regelungstechnik</li>
-                  <li>Leistungselektronik (Grundlagen)</li>
-                  <li>Signal- &amp; Systemtheorie</li>
-                </ul>
+                <span class="link-pill link-pill-primary">Spiel</span>
               </div>
-              <div>
-                <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted); margin: 0.7rem 0 0.25rem;">
-                  Praktisch / digital
-                </h4>
-                <ul class="skills-list">
-                  <li>Laborerfahrung</li>
-                  <li>Mikrocontroller (z.&nbsp;B. Arduino)</li>
-                  <li>Grundlagen Programmierung</li>
-                  <li>Team- &amp; Projektarbeit</li>
-                </ul>
+              <div class="project-actions">
+                <a class="project-btn project-btn-primary" href="projekte/schere-stein-papier.html">
+                  <span>Spiel starten</span>
+                  <span>▶</span>
+                </a>
               </div>
-            </div>
-          </div>
+            </article>
 
-          <div>
-            <h3 style="font-size: 0.96rem; margin-top: 0">Ziele im Praxissemester</h3>
-            <ul class="goals-list">
-              <li>
-                <span class="goals-bullet">•</span>
-                <span>
-                  Mitarbeiten in einem Team, das an
-                  <strong>realen technischen Herausforderungen</strong>
-                  arbeitet.
-                </span>
-              </li>
-              <li>
-                <span class="goals-bullet">•</span>
-                <span>
-                  Einblick in Entwicklungs-, Test- oder Inbetriebnahmeprozesse
-                  bekommen.
-                </span>
-              </li>
-              <li>
-                <span class="goals-bullet">•</span>
-                <span>
-                  Verantwortung für Teilaufgaben übernehmen und Ergebnisse
-                  dokumentieren.
-                </span>
-              </li>
-              <li>
-                <span class="goals-bullet">•</span>
-                <span>
-                  Mein theoretisches Wissen gezielt dort einbringen, wo es im
-                  Unternehmen weiterhilft.
-                </span>
-              </li>
-            </ul>
+            <!--
+              Beispiel für ein weiteres Projekt:
+              <article class="project-card">
+                <div class="project-header">
+                  <div>
+                    <div class="project-title">Mein nächstes Projekt</div>
+                    <div class="project-meta">
+                      Kurze Beschreibung, was das Projekt macht.
+                    </div>
+                  </div>
+                  <span class="link-pill">Experiment</span>
+                </div>
+                <div class="project-actions">
+                  <a class="project-btn project-btn-primary" href="projekte/mein-naechstes-projekt.html">
+                    <span>Öffnen</span>
+                    <span>▶</span>
+                  </a>
+                </div>
+              </article>
+            -->
           </div>
-        </div>
-      </section>
-
-      <section id="kontakt" aria-labelledby="kontakt-title">
-        <h2 id="kontakt-title" class="section-title">Kontakt &amp; Unterlagen</h2>
-        <p class="section-subtitle">
-          Wie Sie mich erreichen können und welche Unterlagen ich gerne
-          zusende.
-        </p>
-
-        <div class="panel contact-grid">
-          <div>
-            <div class="contact-line">
-              <span class="contact-label">E-Mail</span>
-              <span class="contact-value">
-                <!-- Deine E-Mail hier eintragen -->
-                <strong>deine.mail@beispiel.de</strong>
-              </span>
-            </div>
-            <div class="contact-line">
-              <span class="contact-label">Telefon (optional)</span>
-              <span class="contact-value">
-                <!-- Deine Telefonnummer hier eintragen oder Zeile entfernen -->
-                auf Wunsch teile ich meine Telefonnummer gerne per E-Mail mit
-              </span>
-            </div>
-            <p class="contact-hint">
-              Wenn Sie Interesse an einer Zusammenarbeit im Praxissemester
-              haben, freue ich mich über eine Nachricht. Gerne sende ich Ihnen
-              ein
-              <strong>klassisches Bewerbungs-PDF</strong>
-              mit Lebenslauf, Notenübersicht und weiteren Details zu.
-            </p>
-          </div>
-          <div>
-            <p class="contact-note">
-              <strong>Hinweis für mich selbst:</strong><br />
-              Die fett markierten Stellen und Kommentare in dieser Seite kann
-              ich direkt im Quelltext anpassen (z.&nbsp;B. Studiengang,
-              Schwerpunkte, Kontaktdaten), damit die Seite genau zu meiner
-              persönlichen Situation passt.
-            </p>
-          </div>
+          <p class="notes">
+            Neue Projekte kannst du einfach anlegen, indem du im Ordner
+            <strong>`projekte`</strong>
+            eine neue
+            <code>.html</code>
+            -Datei erstellst und hier einen weiteren
+            <code>&lt;article class="project-card"&gt;…&lt;/article&gt;</code>
+            -Block ergänzt.
+          </p>
         </div>
       </section>
 
@@ -961,10 +501,11 @@
         <span>
           ©
           <span id="jahr"></span>
-          · Praxissemester Elektrotechnik – Regensburg
+          · Meine persönliche Übersicht
         </span>
         <span>
-          Erstellt als persönliche Übersicht meiner Bewerbungsschritte.
+          Diese Seite ist nur für mich – als zentrales Hub für Links &amp;
+          Projekte.
         </span>
       </footer>
     </main>
