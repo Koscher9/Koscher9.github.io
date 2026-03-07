@@ -4,43 +4,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meine Übersicht – Links & Projekte</title>
-  <meta name="description" content="Persönliche Übersicht mit Links und Projekten." />
+  <title>Spielesammlung</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <style>
     :root {
-      --bg: #030712;
-      --card-bg: rgba(17, 24, 39, 0.45);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --card-border-hover: rgba(139, 92, 246, 0.4);
+      --bg: #09090b;
+      --card-bg: rgba(24, 24, 27, 0.6);
+      --card-border: rgba(255, 255, 255, 0.1);
       --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent-primary: #3b82f6;
-      --accent-secondary: #8b5cf6;
-      --accent-glow: rgba(139, 92, 246, 0.35);
+      --text-muted: #a1a1aa;
+      --accent-1: #8b5cf6;
+      --accent-2: #ec4899;
+      --accent-3: #3b82f6;
       --card-radius: 24px;
     }
 
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
-      min-height: 100vh;
       font-family: 'Outfit', system-ui, -apple-system, sans-serif;
       color: var(--text-main);
       background-color: var(--bg);
       background-image:
-        radial-gradient(circle at 10% 40%, rgba(59, 130, 246, 0.12), transparent 45%),
-        radial-gradient(circle at 90% 60%, rgba(139, 92, 246, 0.12), transparent 45%),
-        linear-gradient(135deg, #030712 0%, #0f172a 100%);
+        radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.15), transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.15), transparent 50%);
       background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5rem 1.5rem;
       overflow-x: hidden;
     }
 
+    /* Ambient animated background bubbles */
     body::before,
     body::after {
       content: '';
@@ -50,476 +54,99 @@
       border-radius: 50%;
       filter: blur(100px);
       z-index: -1;
-      opacity: 0.4;
+      opacity: 0.5;
     }
 
     body::before {
       top: -10vw;
       left: -10vw;
-      background: var(--accent-primary);
+      background: var(--accent-1);
       animation: drift 20s infinite alternate ease-in-out;
     }
 
     body::after {
       bottom: -10vw;
       right: -10vw;
-      background: var(--accent-secondary);
+      background: var(--accent-3);
       animation: drift 25s infinite alternate-reverse ease-in-out;
     }
 
     @keyframes drift {
       0% {
-        transform: translate(0, 0);
+        transform: translate(0, 0) scale(1);
       }
 
       100% {
-        transform: translate(5vw, 5vw);
-      }
-    }
-
-    main {
-      max-width: 820px;
-      margin: 0 auto;
-      padding: 3rem 1.25rem 4rem;
-    }
-
-    .shell {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
-      border: 1px solid var(--card-border);
-      border-radius: 36px;
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      padding: 2.2rem;
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
-    }
-
-    @media (min-width: 768px) {
-      .shell {
-        padding: 3rem 3.5rem;
-        gap: 3rem;
+        transform: translate(5vw, 5vw) scale(1.1);
       }
     }
 
     header {
-      width: 100%;
-    }
-
-    .profile {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       text-align: center;
-      gap: 1.2rem;
-      animation: slideUp 0.8s ease-out backwards;
-    }
-
-    .avatar {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      background: conic-gradient(from 180deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
-      padding: 3px;
-      box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);
-      animation: floatAvatar 6s ease-in-out infinite, spinGrad 10s linear infinite;
+      margin-bottom: 4rem;
+      animation: fadeDown 1s ease-out;
       position: relative;
+      z-index: 10;
     }
 
-    .avatar::before {
-      content: "";
-      position: absolute;
-      inset: 3px;
-      border-radius: 50%;
-      background: radial-gradient(circle at top left, #2a2a35, #080b12);
-      z-index: 1;
-    }
-
-    @keyframes spinGrad {
-      100% {
-        filter: hue-rotate(360deg);
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
       }
-    }
 
-    @keyframes floatAvatar {
-
-      0%,
-      100% {
+      to {
+        opacity: 1;
         transform: translateY(0);
       }
-
-      50% {
-        transform: translateY(-8px);
-      }
     }
 
-    .name {
-      font-size: 2.2rem;
-      font-weight: 700;
-      background: linear-gradient(to right, #fff, #a5b4fc);
+    .title-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #fff 20%, #a5b4fc 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      letter-spacing: -0.02em;
-      margin: 0;
+      text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
     }
 
-    .tagline {
-      font-size: 1.05rem;
+    .subtitle {
+      font-size: 1.25rem;
       color: var(--text-muted);
-      max-width: 480px;
+      font-weight: 300;
+      max-width: 500px;
+      margin: 0 auto;
       line-height: 1.6;
-      margin: 0;
-      font-weight: 300;
     }
 
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.6rem;
-    }
-
-    .pill {
-      font-size: 0.85rem;
-      font-weight: 500;
-      border-radius: 99px;
-      padding: 0.4rem 1rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #e2e8f0;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-    }
-
-    .pill:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateY(-1px);
-    }
-
-    .pill-strong {
-      background: rgba(59, 130, 246, 0.15);
-      border-color: rgba(59, 130, 246, 0.4);
-      color: #93c5fd;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
-    }
-
-    .pill-strong:hover {
-      background: rgba(59, 130, 246, 0.25);
-      box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
-    }
-
-    .hero {
+    main {
       width: 100%;
-    }
-
-    .hero-links {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      animation: slideUp 0.8s ease-out 0.15s backwards;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.85rem 1.8rem;
-      border-radius: 99px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1px solid var(--card-border);
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-      backdrop-filter: blur(12px);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      background: rgba(255, 255, 255, 0.1);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 255, 255, 0.05);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      border: none;
-      box-shadow: 0 10px 25px var(--accent-glow);
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #4f46e5, #9333ea);
-      box-shadow: 0 15px 35px var(--accent-glow);
-      transform: translateY(-3px) scale(1.02);
-    }
-
-    section {
-      animation: slideUp 0.8s ease-out 0.25s backwards;
-      width: 100%;
-    }
-
-    #projekte {
-      animation-delay: 0.35s;
-    }
-
-    .section-title {
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin: 0 0 0.4rem 0;
-      color: #fff;
-      letter-spacing: -0.01em;
-    }
-
-    .section-subtitle {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      margin: 0 0 1.5rem 0;
-      font-weight: 300;
-      line-height: 1.5;
-    }
-
-    .panel {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--card-radius);
-      padding: 1.5rem;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 15px 35px rgba(0, 0, 0, 0.2);
-    }
-
-    .links-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-
-    .link-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.1rem 1.4rem;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      text-decoration: none;
-      color: #fff;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      max-width: 900px;
+      animation: fadeUp 1s ease-out 0.2s backwards;
       position: relative;
-      overflow: hidden;
+      z-index: 10;
     }
 
-    .link-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .link-item:hover {
-      transform: translateY(-3px) scale(1.01);
-      border-color: var(--card-border-hover);
-      background: rgba(139, 92, 246, 0.08);
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(139, 92, 246, 0.15);
-    }
-
-    .link-item:hover::before {
-      left: 100%;
-    }
-
-    .link-main {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-
-    .link-title {
-      font-weight: 500;
-      font-size: 1.1rem;
-      letter-spacing: 0.01em;
-    }
-
-    .link-desc {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      font-weight: 300;
-    }
-
-    .link-pill {
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 0.3rem 0.85rem;
-      border-radius: 99px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #cbd5e1;
-      border: 1px solid transparent;
-      transition: all 0.3s ease;
-    }
-
-    .link-item:hover .link-pill {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .link-pill-primary {
-      background: rgba(139, 92, 246, 0.2);
-      color: #ddd6fe;
-      border: 1px solid rgba(139, 92, 246, 0.3);
-    }
-
-    .link-item:hover .link-pill-primary {
-      background: rgba(139, 92, 246, 0.35);
-      border-color: rgba(139, 92, 246, 0.5);
-      box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
-      color: #fff;
-    }
-
-    .projects-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.2rem;
-    }
-
-    @media (min-width: 640px) {
-      .projects-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    .project-card {
-      padding: 1.4rem;
-      border-radius: 20px;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
-      border: 1px solid var(--card-border);
-      display: flex;
-      flex-direction: column;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .project-card::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      pointer-events: none;
-    }
-
-    .project-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(59, 130, 246, 0.4);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(59, 130, 246, 0.1);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-    }
-
-    .project-card:hover::after {
-      opacity: 1;
-    }
-
-    .project-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 0.8rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .project-title {
-      font-weight: 600;
-      font-size: 1.15rem;
-      margin-bottom: 0.3rem;
-      color: #fff;
-    }
-
-    .project-meta {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-      font-weight: 300;
-    }
-
-    .project-actions {
-      margin-top: auto;
-      padding-top: 1.5rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .project-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      font-weight: 500;
-      padding: 0.6rem 1.2rem;
-      border-radius: 99px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      border: 1px solid transparent;
-    }
-
-    .project-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: scale(1.03);
-    }
-
-    .project-btn-primary {
-      background: rgba(59, 130, 246, 0.15);
-      color: #bfdbfe;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-    }
-
-    .project-btn-primary:hover {
-      background: rgba(59, 130, 246, 0.25);
-      border-color: rgba(59, 130, 246, 0.5);
-      color: #fff;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-    }
-
-    .notes {
-      font-size: 0.85rem;
-      color: #64748b;
-      margin-top: 1.5rem;
-      text-align: center;
-      font-weight: 300;
-    }
-
-    .notes strong,
-    .notes code {
-      color: #94a3b8;
-      font-weight: 500;
-    }
-
-    footer {
-      width: 100%;
-      margin-top: 3rem;
-      padding-top: 1.8rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 0.85rem;
-      color: #64748b;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 1rem;
-      animation: slideUp 0.8s ease-out 0.45s backwards;
-      font-weight: 300;
-    }
-
-    @keyframes slideUp {
+    @keyframes fadeUp {
       from {
         opacity: 0;
         transform: translateY(30px);
@@ -531,175 +158,196 @@
       }
     }
 
-    html {
-      scroll-behavior: smooth;
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 2rem;
+    }
+
+    .game-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--card-radius);
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      text-decoration: none;
+      color: var(--text-main);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .game-card:hover::before {
+      opacity: 1;
+    }
+
+    .game-icon-wrapper {
+      width: 90px;
+      height: 90px;
+      border-radius: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 3rem;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 1;
+      transition: all 0.4s ease;
+    }
+
+    .game-card:hover .game-icon-wrapper {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    /* Individuelle Glow-Effekte für die Icons */
+    .icon-rps {
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+    }
+
+    .game-card:hover .icon-rps {
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .icon-c4 {
+      box-shadow: 0 0 30px rgba(236, 72, 153, 0.3);
+    }
+
+    .game-card:hover .icon-c4 {
+      box-shadow: 0 0 40px rgba(236, 72, 153, 0.6);
+      border-color: rgba(236, 72, 153, 0.4);
+    }
+
+    .game-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .game-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .play-btn {
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 2rem;
+      border-radius: 99px;
+      background: white;
+      color: black;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .game-card:hover .play-btn {
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+      color: white;
+      padding: 0.8rem 2.5rem;
+      box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+    }
+
+    .play-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .game-card:hover .play-icon {
+      transform: translateX(5px);
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 3rem;
+      }
+
+      .games-grid {
+        grid-template-columns: 1fr;
+      }
+
+      body {
+        padding: 3rem 1.5rem;
+      }
     }
   </style>
 </head>
 
 <body>
+
   <header>
-    <div class="profile">
-      <div class="avatar"></div>
-      <div>
-        <div class="name">Mein persönlicher Überblick</div>
-        <p class="tagline">
-          Eine zentrale Seite für meine wichtigsten Links und Projekte – eine
-          Art persönlicher Linktree.
-        </p>
-      </div>
-      <div class="pill-row">
-        <span class="pill pill-strong">Elektrotechnik-Student</span>
-        <span class="pill">Projekte zum Ausprobieren</span>
-        <span class="pill">Wächst mit der Zeit</span>
-      </div>
-    </div>
+    <div class="title-badge">Arcade Modus</div>
+    <h1>Was willst du spielen?</h1>
+    <p class="subtitle">Wähle dein Spiel und stelle dich der Herausforderung. Neue Spiele können jederzeit ergänzt
+      werden.</p>
   </header>
 
-  <main class="shell">
-    <section class="hero">
-      <div class="hero-links">
-        <a href="#links" class="btn btn-primary">
-          <span>Zu meinen Links</span>
-          <span class="btn-icon">↓</span>
-        </a>
-        <span style="margin-left: 0.5rem"></span>
-        <a href="#projekte" class="btn">
-          <span>Zu meinen Projekten</span>
-        </a>
-      </div>
-    </section>
+  <main>
+    <div class="games-grid">
 
-    <section id="links" aria-labelledby="links-title">
-      <h2 id="links-title" class="section-title">Wichtige Links</h2>
-      <p class="section-subtitle">
-        Hier kannst du später alles sammeln, was zu dir gehört: GitHub, LinkedIn,
-        Hochschule, Lebenslauf und mehr.
-      </p>
-
-      <div class="panel">
-        <div class="links-list">
-          <a class="link-item" href="#" target="_blank" rel="noopener">
-            <div class="link-main">
-              <span class="link-title">Mein GitHub-Profil</span>
-              <span class="link-desc">
-                Platzhalter – hier später deinen richtigen GitHub-Link
-                eintragen.
-              </span>
-            </div>
-            <span class="link-pill link-pill-primary">GitHub</span>
-          </a>
-
-          <a class="link-item" href="#" target="_blank" rel="noopener">
-            <div class="link-main">
-              <span class="link-title">Mein LinkedIn-/Xing-Profil</span>
-              <span class="link-desc">
-                Ebenfalls nur ein Platzhalter – kann beliebig ersetzt werden.
-              </span>
-            </div>
-            <span class="link-pill">Profil</span>
-          </a>
-
-          <a class="link-item" href="#" target="_blank" rel="noopener">
-            <div class="link-main">
-              <span class="link-title">Sonstiger Link</span>
-              <span class="link-desc">
-                Zum Beispiel Hochschule, Portfolio, Lebenslauf oder etwas ganz
-                anderes.
-              </span>
-            </div>
-            <span class="link-pill">Flexibel</span>
-          </a>
+      <!-- Schere Stein Papier -->
+      <a href="projekte/schere-stein-papier.html" class="game-card">
+        <div class="game-icon-wrapper icon-rps">
+          ✌️
         </div>
-        <p class="notes">
-          Zum Anpassen einfach in der
-          <strong>`index.html`</strong>
-          diese Links suchen und die
-          <code>href="#"</code>
-          sowie Texte ändern.
-        </p>
-      </div>
-    </section>
-
-    <section id="projekte" aria-labelledby="projekte-title">
-      <h2 id="projekte-title" class="section-title">Meine Projekte</h2>
-      <p class="section-subtitle">
-        Ein kleines Verzeichnis für Spiele, Experimente und andere Ideen. Du
-        kannst hier beliebig viele Projekte ergänzen.
-      </p>
-
-      <div class="panel">
-        <div class="projects-grid">
-          <article class="project-card">
-            <div class="project-header">
-              <div>
-                <div class="project-title">Schere, Stein, Papier</div>
-                <div class="project-meta">
-                  Einfaches Spiel gegen den Computer – direkt im Browser.
-                </div>
-              </div>
-              <span class="link-pill link-pill-primary">Spiel</span>
-            </div>
-            <div class="project-actions">
-              <a class="project-btn project-btn-primary" href="projekte/schere-stein-papier.html">
-                <span>Spiel starten</span>
-                <span>▶</span>
-              </a>
-            </div>
-          </article>
-
-          <!--
-              Beispiel für ein weiteres Projekt:
-              <article class="project-card">
-                <div class="project-header">
-                  <div>
-                    <div class="project-title">Mein nächstes Projekt</div>
-                    <div class="project-meta">
-                      Kurze Beschreibung, was das Projekt macht.
-                    </div>
-                  </div>
-                  <span class="link-pill">Experiment</span>
-                </div>
-                <div class="project-actions">
-                  <a class="project-btn project-btn-primary" href="projekte/mein-naechstes-projekt.html">
-                    <span>Öffnen</span>
-                    <span>▶</span>
-                  </a>
-                </div>
-              </article>
-            -->
+        <h2 class="game-title">Schere, Stein, Papier</h2>
+        <p class="game-desc">Der absolute Klassiker. Tritt gegen den Computer an und zeige, wer die bessere Intuition
+          hat.</p>
+        <div class="play-btn">
+          Spielen <span class="play-icon">▶</span>
         </div>
-        <p class="notes">
-          Neue Projekte kannst du einfach anlegen, indem du im Ordner
-          <strong>`projekte`</strong>
-          eine neue
-          <code>.html</code>
-          -Datei erstellst und hier einen weiteren
-          <code>&lt;article class="project-card"&gt;…&lt;/article&gt;</code>
-          -Block ergänzt.
-        </p>
-      </div>
-    </section>
+      </a>
 
-    <footer>
-      <span>
-        ©
-        <span id="jahr"></span>
-        · Meine persönliche Übersicht
-      </span>
-      <span>
-        Diese Seite ist nur für mich – als zentrales Hub für Links &amp;
-        Projekte.
-      </span>
-    </footer>
+      <!-- 4 Gewinnt -->
+      <a href="projekte/4-gewinnt/index.html" class="game-card">
+        <div class="game-icon-wrapper icon-c4">
+          🔴
+        </div>
+        <h2 class="game-title">4 Gewinnt</h2>
+        <p class="game-desc">Taktik pur. Verbinde vier deiner Chips in einer Reihe, bevor dein Gegner es tut.</p>
+        <div class="play-btn">
+          Spielen <span class="play-icon">▶</span>
+        </div>
+      </a>
+
+    </div>
   </main>
 
-  <script>
-    const jahrElement = document.getElementById("jahr");
-    if (jahrElement) {
-      jahrElement.textContent = new Date().getFullYear().toString();
-    }
-  </script>
 </body>
 
 </html>
