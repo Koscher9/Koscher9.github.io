@@ -200,6 +200,7 @@
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
       opacity: 0;
       transition: opacity 0.4s ease;
+      pointer-events: none;
     }
 
     .game-card:hover {
@@ -330,7 +331,7 @@
         <h2 class="game-title">Neues Spiel</h2>
         <p class="game-desc">Erstelle einen Raum und teile den Code mit einem Freund.</p>
         <button id="btn-host" class="play-btn">Hosten</button>
-        <div id="host-ui" style="display: none; margin-top: 2rem;">
+        <div id="host-ui" style="display: none; margin-top: 2rem; position: relative; z-index: 1;">
           <p style="font-size: 1.2rem; color: var(--text-muted);">Dein Code:</p>
           <div id="room-code-display"
             style="font-size: 2.5rem; font-weight: 800; letter-spacing: 5px; margin: 1rem 0; color: var(--accent-1);">
@@ -343,10 +344,10 @@
         <h2 class="game-title">Beitreten</h2>
         <p class="game-desc">Gib den 4-stelligen Code deines Freundes ein.</p>
         <input type="text" id="input-join-code" placeholder="CODE" maxlength="4" autocomplete="off"
-          style="width: 150px; text-align: center; font-size: 2rem; font-family: 'Outfit'; font-weight: 700; text-transform: uppercase; padding: 0.5rem; margin-bottom: 1.5rem; background: rgba(0,0,0,0.3); border: 2px solid var(--card-border); border-radius: 12px; color: white; letter-spacing: 3px;">
+          style="position: relative; z-index: 1; width: 150px; text-align: center; font-size: 2rem; font-family: 'Outfit'; font-weight: 700; text-transform: uppercase; padding: 0.5rem; margin-bottom: 1.5rem; background: rgba(0,0,0,0.3); border: 2px solid var(--card-border); border-radius: 12px; color: white; letter-spacing: 3px;">
         <br>
         <button id="btn-join" class="play-btn">Beitreten</button>
-        <div id="guest-ui" style="display: none; margin-top: 2rem;">
+        <div id="guest-ui" style="display: none; margin-top: 2rem; position: relative; z-index: 1;">
           <p id="guest-status" style="color: var(--accent-3);">Verbinde...</p>
         </div>
       </div>
