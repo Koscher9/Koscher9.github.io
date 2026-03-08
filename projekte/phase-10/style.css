@@ -255,10 +255,30 @@ body {
 
 .my-hand {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 0.5rem;
     min-height: var(--card-h-lg);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
+    padding-bottom: 10px;
+    /* Space for scrollbar */
+}
+
+/* Scrollbar styling for hand */
+.my-hand::-webkit-scrollbar {
+    height: 8px;
+}
+
+.my-hand::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.my-hand::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 4px;
 }
 
 .footer-bar {
@@ -405,6 +425,8 @@ body {
     width: var(--card-w);
     height: var(--card-h);
     font-size: 1.8rem;
+    flex-shrink: 0;
+    /* Prevent squishing */
 }
 
 #my-hand .card::before,
@@ -460,4 +482,73 @@ body {
 .btn-outline:hover {
     color: white;
     border-color: white;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    body {
+        /* Allow natural vertical scrolling on mobile if absolutely needed, though we try to keep it app-like */
+        overflow-y: auto;
+    }
+
+    .top-bar {
+        padding: 0.5rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .game-board {
+        flex-direction: column;
+        padding: 0.5rem;
+        gap: 1rem;
+        overflow: visible;
+        /* Let board expand down */
+    }
+
+    .piles-area {
+        flex-direction: row;
+        padding: 1rem;
+        min-width: auto;
+    }
+
+    .play-area {
+        padding: 1rem;
+        min-height: 300px;
+    }
+
+    .bottom-area {
+        padding: 1rem;
+        position: sticky;
+        bottom: 0;
+        z-index: 100;
+        box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .hand-controls {
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .footer-bar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* Scaling cards slightly down for mobile */
+    :root {
+        --card-w: 60px;
+        --card-h: 90px;
+        --card-w-lg: 70px;
+        --card-h-lg: 105px;
+    }
+
+    .card {
+        font-size: 2rem;
+    }
 }
