@@ -219,7 +219,7 @@
     </div>
 
     <p class="back-link">
-      <a href="../index.html">← Zurück zu meiner Übersicht</a>
+      <a href="../index.html" id="back-btn">← Zurück zu meiner Übersicht</a>
     </p>
   </main>
 
@@ -234,6 +234,7 @@
 
     const connectionOverlay = document.getElementById("connection-overlay");
     const connStatus = document.getElementById("conn-status");
+    const backBtn = document.getElementById("back-btn");
 
     const score = {
       du: 0,
@@ -301,6 +302,8 @@
           } else {
             evaluateRound();
           }
+        } else if (data.type === 'BACK_TO_LOBBY') {
+          window.location.href = `../index.html?room=${roomCode}&role=${role}`;
         }
       });
 
@@ -401,6 +404,16 @@
         }
       });
     });
+
+    if (backBtn) {
+      backBtn.addEventListener("click", (e) => {
+        if (roomCode && conn && conn.open) {
+          e.preventDefault();
+          conn.send({ type: 'BACK_TO_LOBBY' });
+          window.location.href = `../index.html?room=${roomCode}&role=${role}`;
+        }
+      });
+    }
   </script>
 </body>
 
