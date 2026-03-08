@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     :root {
       --bg: #09090b;
@@ -164,6 +165,13 @@
       gap: 2rem;
     }
 
+    .lobby-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      width: 100%;
+    }
+
     .game-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -311,43 +319,198 @@
 <body>
 
   <header>
-    <div class="title-badge">Arcade Modus</div>
-    <h1>Was willst du spielen?</h1>
-    <p class="subtitle">Wähle dein Spiel und stelle dich der Herausforderung. Neue Spiele können jederzeit ergänzt
-      werden.</p>
+    <div class="title-badge">Multiplayer</div>
+    <h1 id="main-title">Lobby</h1>
+    <p class="subtitle" id="main-subtitle">Hoste ein Spiel oder trete einem Freund bei, um gemeinsam zu spielen.</p>
   </header>
 
   <main>
-    <div class="games-grid">
+    <div id="lobby-container" class="lobby-container">
+      <div class="game-card host-card">
+        <h2 class="game-title">Neues Spiel</h2>
+        <p class="game-desc">Erstelle einen Raum und teile den Code mit einem Freund.</p>
+        <button id="btn-host" class="play-btn">Hosten</button>
+        <div id="host-ui" style="display: none; margin-top: 2rem;">
+          <p style="font-size: 1.2rem; color: var(--text-muted);">Dein Code:</p>
+          <div id="room-code-display"
+            style="font-size: 2.5rem; font-weight: 800; letter-spacing: 5px; margin: 1rem 0; color: var(--accent-1);">
+            ---</div>
+          <p id="host-status" style="color: var(--accent-3);">Warte auf Mitspieler...</p>
+        </div>
+      </div>
+
+      <div class="game-card join-card">
+        <h2 class="game-title">Beitreten</h2>
+        <p class="game-desc">Gib den 4-stelligen Code deines Freundes ein.</p>
+        <input type="text" id="input-join-code" placeholder="CODE" maxlength="4" autocomplete="off"
+          style="width: 150px; text-align: center; font-size: 2rem; font-family: 'Outfit'; font-weight: 700; text-transform: uppercase; padding: 0.5rem; margin-bottom: 1.5rem; background: rgba(0,0,0,0.3); border: 2px solid var(--card-border); border-radius: 12px; color: white; letter-spacing: 3px;">
+        <br>
+        <button id="btn-join" class="play-btn">Beitreten</button>
+        <div id="guest-ui" style="display: none; margin-top: 2rem;">
+          <p id="guest-status" style="color: var(--accent-3);">Verbinde...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="games-grid" id="games-grid" style="display: none;">
 
       <!-- Schere Stein Papier -->
-      <a href="projekte/schere-stein-papier.html" class="game-card">
+      <a href="#" data-game-url="projekte/schere-stein-papier.html" class="game-card game-link">
         <div class="game-icon-wrapper icon-rps">
           ✌️
         </div>
         <h2 class="game-title">Schere, Stein, Papier</h2>
-        <p class="game-desc">Der absolute Klassiker. Tritt gegen den Computer an und zeige, wer die bessere Intuition
-          hat.</p>
+        <p class="game-desc">Der absolute Klassiker. Tritt online gegen deinen Freund an.</p>
         <div class="play-btn">
-          Spielen <span class="play-icon">▶</span>
+          Auswählen <span class="play-icon">▶</span>
         </div>
       </a>
 
       <!-- 4 Gewinnt -->
-      <a href="projekte/4-gewinnt/index.html" class="game-card">
+      <a href="#" data-game-url="projekte/4-gewinnt/index.html" class="game-card game-link">
         <div class="game-icon-wrapper icon-c4">
           🔴
         </div>
         <h2 class="game-title">4 Gewinnt</h2>
         <p class="game-desc">Taktik pur. Verbinde vier deiner Chips in einer Reihe, bevor dein Gegner es tut.</p>
         <div class="play-btn">
-          Spielen <span class="play-icon">▶</span>
+          Auswählen <span class="play-icon">▶</span>
         </div>
       </a>
 
     </div>
   </main>
 
+  <script>
+    const btnHost = document.getElementById('btn-host');
+    const btnJoin = document.getElementById('btn-join');
+    const inputJoinCode = document.getElementById('input-join-code');
+    const lobbyContainer = document.getElementById('lobby-container');
+    const gamesGrid = document.getElementById('games-grid');
+
+    const hostUi = document.getElementById('host-ui');
+    const roomCodeDisplay = document.getElementById('room-code-display');
+    const hostStatus = document.getElementById('host-status');
+
+    const guestUi = document.getElementById('guest-ui');
+    const guestStatus = document.getElementById('guest-status');
+
+    const mainTitle = document.getElementById('main-title');
+    const mainSubtitle = document.getElementById('main-subtitle');
+
+    let peer = null;
+    let conn = null;
+    let roomCode = '';
+    let isHost = false;
+
+    // Helper to generate a code
+    function generateCode() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 4; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
+    btnHost.addEventListener('click', () => {
+      btnHost.style.display = 'none';
+      hostUi.style.display = 'block';
+
+      roomCode = generateCode();
+      roomCodeDisplay.textContent = roomCode;
+      isHost = true;
+
+      peer = new Peer(`koscher9-lobby-${roomCode}`);
+
+      peer.on('open', (id) => {
+        console.log('Host ready:', id);
+      });
+
+      peer.on('connection', (connection) => {
+        conn = connection;
+        hostStatus.textContent = "Mitspieler verbunden! Wähle ein Spiel...";
+        hostStatus.style.color = "#22c55e"; // Success green
+
+        // Show games
+        lobbyContainer.style.display = 'none';
+        gamesGrid.style.display = 'grid';
+        mainTitle.textContent = "Was wollt ihr spielen?";
+        mainSubtitle.textContent = "Host, wähle ein Spiel aus.";
+
+        conn.on('data', (data) => {
+          console.log('Data from guest:', data);
+        });
+      });
+
+      peer.on('error', (err) => {
+        hostStatus.textContent = "Fehler: " + err.type;
+        hostStatus.style.color = "red";
+      });
+    });
+
+    btnJoin.addEventListener('click', () => {
+      const code = inputJoinCode.value.trim().toUpperCase();
+      if (code.length !== 4) {
+        alert("Bitte einen gültigen 4-stelligen Code eingeben.");
+        return;
+      }
+
+      btnJoin.style.display = 'none';
+      guestUi.style.display = 'block';
+      guestStatus.textContent = "Verbinde mit " + code + "...";
+
+      roomCode = code;
+      isHost = false;
+
+      peer = new Peer();
+
+      peer.on('open', (id) => {
+        conn = peer.connect(`koscher9-lobby-${code}`);
+
+        conn.on('open', () => {
+          guestStatus.textContent = "Verbunden! Warte bis der Host ein Spiel wählt...";
+          guestStatus.style.color = "#22c55e"; // Success green
+          inputJoinCode.disabled = true;
+        });
+
+        conn.on('data', (data) => {
+          if (data && data.type === 'START_GAME') {
+            // Navigate to game
+            window.location.href = `${data.url}?room=${roomCode}&role=guest`;
+          }
+        });
+
+        conn.on('error', (err) => {
+          guestStatus.textContent = "Verbindungsfehler.";
+        });
+      });
+
+      peer.on('error', (err) => {
+        guestStatus.textContent = "Fehler (" + err.type + "): Raum nicht gefunden?";
+        guestStatus.style.color = "red";
+        btnJoin.style.display = 'inline-flex';
+      });
+    });
+
+    // Handle game clicks
+    document.querySelectorAll('.game-link').forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        const url = card.getAttribute('data-game-url');
+
+        if (isHost && conn && conn.open) {
+          conn.send({ type: 'START_GAME', url: url });
+          window.location.href = `${url}?room=${roomCode}&role=host`;
+        } else if (!isHost) {
+          alert("Nur der Host kann ein Spiel starten!");
+        } else {
+          // Offline fallback (just in case they didn't start a server)
+          window.location.href = url;
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>
