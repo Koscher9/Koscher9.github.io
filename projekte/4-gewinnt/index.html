@@ -9,14 +9,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 
 <body>
     <div class="app-container">
         <header>
             <h1>4 Gewinnt</h1>
-            <p>Entwickelt in drei separaten Dateien (HTML, CSS, JS)</p>
+            <p>Peer-to-Peer Multiplayer Modus</p>
         </header>
+
+        <!-- Connection Overlay -->
+        <div id="connection-overlay"
+            style="position: fixed; inset: 0; background: rgba(9, 9, 11, 0.95); z-index: 100; display: none; align-items: center; justify-content: center; flex-direction: column; text-align: center; color: white; backdrop-filter: blur(5px);">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem;">Multiplayer</h2>
+            <p id="conn-status" style="color: #a1a1aa; font-size: 1.2rem;">Initialisiere Verbindung...</p>
+        </div>
 
         <main class="game-board-container">
             <div class="status-bar">

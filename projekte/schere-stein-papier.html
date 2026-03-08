@@ -1,297 +1,407 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Schere, Stein, Papier</title>
-    <style>
-      :root {
-        --bg: #020617;
-        --accent: #38bdf8;
-        --accent-soft: rgba(56, 189, 248, 0.16);
-        --accent-strong: #22c55e;
-        --text-main: #e5e7eb;
-        --text-muted: #94a3b8;
-        --border-subtle: rgba(148, 163, 184, 0.4);
-      }
 
-      * {
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schere, Stein, Papier</title>
+  <style>
+    :root {
+      --bg: #020617;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.16);
+      --accent-strong: #22c55e;
+      --text-main: #e5e7eb;
+      --text-muted: #94a3b8;
+      --border-subtle: rgba(148, 163, 184, 0.4);
+    }
 
-      body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
-        color: var(--text-main);
-        background:
-          radial-gradient(circle at top left, #1d4ed8 0, transparent 52%),
-          radial-gradient(circle at bottom right, #22c55e 0, transparent 50%),
-          radial-gradient(circle at center, #020617 0, #020617 70%);
-        background-color: #020617;
-        background-attachment: fixed;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1.5rem 1.25rem;
-      }
+    * {
+      box-sizing: border-box;
+    }
 
-      main {
-        width: 100%;
-        max-width: 480px;
-        background: linear-gradient(
-            135deg,
-            rgba(15, 23, 42, 0.9),
-            rgba(15, 23, 42, 0.98)
-          ),
-          radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 60%);
-        border-radius: 22px;
-        border: 1px solid var(--border-subtle);
-        box-shadow: 0 26px 60px rgba(15, 23, 42, 0.95);
-        padding: 1.5rem 1.6rem 1.3rem;
-        backdrop-filter: blur(26px);
-      }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at top left, #1d4ed8 0, transparent 52%),
+        radial-gradient(circle at bottom right, #22c55e 0, transparent 50%),
+        radial-gradient(circle at center, #020617 0, #020617 70%);
+      background-color: #020617;
+      background-attachment: fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1.25rem;
+    }
 
-      h1 {
-        margin: 0;
-        font-size: 1.35rem;
-        text-align: center;
-      }
+    main {
+      width: 100%;
+      max-width: 480px;
+      background: linear-gradient(135deg,
+          rgba(15, 23, 42, 0.9),
+          rgba(15, 23, 42, 0.98)),
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 60%);
+      border-radius: 22px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.95);
+      padding: 1.5rem 1.6rem 1.3rem;
+      backdrop-filter: blur(26px);
+    }
 
-      .subtitle {
-        margin-top: 0.35rem;
-        font-size: 0.88rem;
-        color: var(--text-muted);
-        text-align: center;
-      }
+    h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      text-align: center;
+    }
 
-      .buttons {
-        display: flex;
-        justify-content: center;
-        gap: 0.6rem;
-        margin: 1.4rem 0 1rem;
-      }
+    .subtitle {
+      margin-top: 0.35rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
 
-      button {
-        flex: 1;
-        max-width: 120px;
-        padding: 0.6rem 0.3rem;
-        border-radius: 999px;
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        background: rgba(15, 23, 42, 0.96);
-        color: var(--text-main);
-        cursor: pointer;
-        font-size: 0.9rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.1rem;
-        transition: transform 0.12s ease-out, box-shadow 0.12s ease-out,
-          border-color 0.12s ease-out, background 0.12s ease-out;
-      }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+      margin: 1.4rem 0 1rem;
+    }
 
-      button span:first-child {
-        font-size: 1.3rem;
-      }
+    button {
+      flex: 1;
+      max-width: 120px;
+      padding: 0.6rem 0.3rem;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: rgba(15, 23, 42, 0.96);
+      color: var(--text-main);
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.1rem;
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out,
+        border-color 0.12s ease-out, background 0.12s ease-out;
+    }
 
-      button span:last-child {
-        font-size: 0.8rem;
-      }
+    button span:first-child {
+      font-size: 1.3rem;
+    }
 
-      button:hover {
-        transform: translateY(-1px);
-        border-color: rgba(148, 163, 184, 0.9);
-        box-shadow: 0 14px 26px rgba(15, 23, 42, 0.9);
-        background: rgba(15, 23, 42, 1);
-      }
+    button span:last-child {
+      font-size: 0.8rem;
+    }
 
-      button:active {
-        transform: translateY(0);
-        box-shadow: none;
-      }
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(148, 163, 184, 0.9);
+      box-shadow: 0 14px 26px rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 1);
+    }
 
-      .status {
-        margin-top: 0.8rem;
-        padding: 0.8rem 0.9rem;
-        border-radius: 12px;
-        background: rgba(15, 23, 42, 0.96);
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        font-size: 0.9rem;
-      }
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
 
-      .status-main {
-        font-size: 1rem;
-        margin-bottom: 0.3rem;
-      }
+    .status {
+      margin-top: 0.8rem;
+      padding: 0.8rem 0.9rem;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      font-size: 0.9rem;
+    }
 
-      .status-detail {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-      }
+    .status-main {
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+    }
 
-      .result {
-        margin-top: 0.6rem;
-        padding: 0.7rem 0.9rem;
-        border-radius: 12px;
-        background: var(--accent-soft);
-        border: 1px solid rgba(34, 197, 94, 0.8);
-        font-size: 0.9rem;
-      }
+    .status-detail {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
 
-      .result strong {
-        color: #bbf7d0;
-      }
+    .result {
+      margin-top: 0.6rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(34, 197, 94, 0.8);
+      font-size: 0.9rem;
+    }
 
-      .scoreboard {
-        margin-top: 0.8rem;
-        display: flex;
-        justify-content: space-between;
-        gap: 0.6rem;
-        font-size: 0.8rem;
-        color: var(--text-muted);
-      }
+    .result strong {
+      color: #bbf7d0;
+    }
 
-      .back-link {
-        margin-top: 1rem;
-        text-align: center;
-        font-size: 0.85rem;
-      }
+    .scoreboard {
+      margin-top: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.6rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
 
-      .back-link a {
-        color: #a5b4fc;
-        text-decoration: none;
-      }
+    .back-link {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 0.85rem;
+    }
 
-      .back-link a:hover {
-        text-decoration: underline;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>Schere, Stein, Papier</h1>
-      <p class="subtitle">
-        Spiele gegen den Computer. Klicke einfach auf eine der drei Möglichkeiten.
-      </p>
+    .back-link a {
+      color: #a5b4fc;
+      text-decoration: none;
+    }
 
-      <div class="buttons">
-        <button data-choice="schere">
-          <span>✂️</span>
-          <span>Schere</span>
-        </button>
-        <button data-choice="stein">
-          <span>🪨</span>
-          <span>Stein</span>
-        </button>
-        <button data-choice="papier">
-          <span>📄</span>
-          <span>Papier</span>
-        </button>
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+
+<body>
+  <!-- Connection Overlay -->
+  <div id="connection-overlay"
+    style="position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); z-index: 100; display: none; align-items: center; justify-content: center; flex-direction: column; text-align: center; color: white; backdrop-filter: blur(5px);">
+    <h2 style="font-size: 2rem; margin-bottom: 1rem;">Multiplayer</h2>
+    <p id="conn-status" style="color: #94a3b8; font-size: 1.2rem;">Initialisiere Verbindung...</p>
+  </div>
+
+  <main>
+    <h1>Schere, Stein, Papier</h1>
+    <p class="subtitle">
+      Spiele online gegen deinen Freund (oder offline gegen den Computer).
+    </p>
+
+    <div class="buttons">
+      <button data-choice="schere">
+        <span>✂️</span>
+        <span>Schere</span>
+      </button>
+      <button data-choice="stein">
+        <span>🪨</span>
+        <span>Stein</span>
+      </button>
+      <button data-choice="papier">
+        <span>📄</span>
+        <span>Papier</span>
+      </button>
+    </div>
+
+    <div class="status">
+      <div class="status-main" id="status-main">
+        Wähle Schere, Stein oder Papier.
       </div>
-
-      <div class="status">
-        <div class="status-main" id="status-main">
-          Wähle Schere, Stein oder Papier.
-        </div>
-        <div class="status-detail" id="status-detail">
-          Noch kein Spiel gestartet.
-        </div>
+      <div class="status-detail" id="status-detail">
+        Noch kein Spiel gestartet.
       </div>
+    </div>
 
-      <div class="result" id="result">
-        <strong>Runde:</strong>
-        Noch keine Runde gespielt.
-      </div>
+    <div class="result" id="result">
+      <strong>Runde:</strong>
+      Noch keine Runde gespielt.
+    </div>
 
-      <div class="scoreboard" id="scoreboard">
-        <span>Du: 0</span>
-        <span>Computer: 0</span>
-        <span>Unentschieden: 0</span>
-      </div>
+    <div class="scoreboard" id="scoreboard">
+      <span>Du: 0</span>
+      <span>Gegner: 0</span>
+      <span>Unentschieden: 0</span>
+    </div>
 
-      <p class="back-link">
-        <a href="../index.html">← Zurück zu meiner Übersicht</a>
-      </p>
-    </main>
+    <p class="back-link">
+      <a href="../index.html">← Zurück zu meiner Übersicht</a>
+    </p>
+  </main>
 
-    <script>
-      const choices = ["schere", "stein", "papier"];
+  <script>
+    const choices = ["schere", "stein", "papier"];
 
-      const buttons = document.querySelectorAll("button[data-choice]");
-      const statusMain = document.getElementById("status-main");
-      const statusDetail = document.getElementById("status-detail");
-      const result = document.getElementById("result");
-      const scoreboard = document.getElementById("scoreboard");
+    const buttons = document.querySelectorAll("button[data-choice]");
+    const statusMain = document.getElementById("status-main");
+    const statusDetail = document.getElementById("status-detail");
+    const result = document.getElementById("result");
+    const scoreboard = document.getElementById("scoreboard");
 
-      const score = {
-        du: 0,
-        computer: 0,
-        unentschieden: 0,
-      };
+    const connectionOverlay = document.getElementById("connection-overlay");
+    const connStatus = document.getElementById("conn-status");
 
-      function computerChoice() {
-        const index = Math.floor(Math.random() * choices.length);
-        return choices[index];
-      }
+    const score = {
+      du: 0,
+      gegner: 0,
+      unentschieden: 0,
+    };
 
-      function spielRunde(player) {
-        const comp = computerChoice();
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomCode = urlParams.get('room');
+    const role = urlParams.get('role');
 
-        let ergebnis;
-        if (player === comp) {
-          ergebnis = "unentschieden";
-          score.unentschieden++;
-        } else if (
-          (player === "schere" && comp === "papier") ||
-          (player === "stein" && comp === "schere") ||
-          (player === "papier" && comp === "stein")
-        ) {
-          ergebnis = "gewonnen";
-          score.du++;
-        } else {
-          ergebnis = "verloren";
-          score.computer++;
-        }
+    let peer = null;
+    let conn = null;
+    let myChoice = null;
+    let peerChoice = null;
 
-        statusMain.textContent = `Du hast ${player} gewählt, der Computer ${comp}.`;
+    if (roomCode && role) {
+      if (connectionOverlay) connectionOverlay.style.display = 'flex';
 
-        if (ergebnis === "gewonnen") {
-          statusDetail.textContent = "Du gewinnst diese Runde!";
-        } else if (ergebnis === "verloren") {
-          statusDetail.textContent = "Der Computer gewinnt diese Runde.";
-        } else {
-          statusDetail.textContent = "Unentschieden – gleiche Wahl.";
-        }
+      if (role === 'host') {
+        peer = new Peer(`koscher9-game-rps-${roomCode}`);
+        if (connStatus) connStatus.textContent = `Warte auf Gegner...`;
 
-        result.innerHTML =
-          "<strong>Letzte Runde:</strong> Du hast " +
-          player +
-          ", der Computer " +
-          comp +
-          " gewählt. Ergebnis: " +
-          ergebnis +
-          ".";
-
-        scoreboard.innerHTML =
-          "<span>Du: " +
-          score.du +
-          "</span><span>Computer: " +
-          score.computer +
-          "</span><span>Unentschieden: " +
-          score.unentschieden +
-          "</span>";
-      }
-
-      buttons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const choice = btn.getAttribute("data-choice");
-          if (choice) {
-            spielRunde(choice);
+        peer.on('connection', (connection) => {
+          conn = connection;
+          setupConnection();
+        });
+        peer.on('error', (err) => {
+          if (connStatus) {
+            connStatus.textContent = "Fehler: " + err.type;
+            connStatus.style.color = "red";
           }
         });
-      });
-    </script>
-  </body>
-</html>
+      } else {
+        peer = new Peer();
+        peer.on('open', () => {
+          if (connStatus) connStatus.textContent = "Verbinde zum Host...";
+          conn = peer.connect(`koscher9-game-rps-${roomCode}`);
+          setupConnection();
+        });
+        peer.on('error', (err) => {
+          if (connStatus) {
+            connStatus.textContent = "Verbindungsfehler: " + err.type;
+            connStatus.style.color = "red";
+          }
+        });
+      }
+    } else {
+      statusMain.textContent = "Wähle Schere, Stein oder Papier.";
+      statusDetail.textContent = "Du spielst gegen den Computer.";
+    }
 
+    function setupConnection() {
+      conn.on('open', () => {
+        if (connectionOverlay) connectionOverlay.style.display = 'none';
+        statusMain.textContent = "Verbunden! Wähle eine Option.";
+        statusDetail.textContent = "Gegner ist bereit.";
+      });
+
+      conn.on('data', (data) => {
+        if (data.type === 'CHOICE') {
+          peerChoice = data.choice;
+          if (!myChoice) {
+            statusDetail.textContent = "Gegner hat gewählt. Du bist dran!";
+          } else {
+            evaluateRound();
+          }
+        }
+      });
+
+      conn.on('close', () => {
+        if (connectionOverlay) connectionOverlay.style.display = 'flex';
+        if (connStatus) {
+          connStatus.textContent = "Verbindung getrennt.";
+          connStatus.style.color = "red";
+        }
+      });
+    }
+
+    function computerChoice() {
+      const index = Math.floor(Math.random() * choices.length);
+      return choices[index];
+    }
+
+    function evaluateRound() {
+      if (!myChoice || !peerChoice) return;
+
+      let ergebnis;
+      if (myChoice === peerChoice) {
+        ergebnis = "unentschieden";
+        score.unentschieden++;
+      } else if (
+        (myChoice === "schere" && peerChoice === "papier") ||
+        (myChoice === "stein" && peerChoice === "schere") ||
+        (myChoice === "papier" && peerChoice === "stein")
+      ) {
+        ergebnis = "gewonnen";
+        score.du++;
+      } else {
+        ergebnis = "verloren";
+        score.gegner++;
+      }
+
+      statusMain.textContent = `Du hast ${myChoice} gewählt, Gegner ${peerChoice}.`;
+
+      if (ergebnis === "gewonnen") {
+        statusDetail.textContent = "Du gewinnst diese Runde!";
+      } else if (ergebnis === "verloren") {
+        statusDetail.textContent = "Gegner gewinnt diese Runde.";
+      } else {
+        statusDetail.textContent = "Unentschieden – gleiche Wahl.";
+      }
+
+      result.innerHTML =
+        "<strong>Letzte Runde:</strong> Du: " +
+        myChoice +
+        ", Gegner: " +
+        peerChoice +
+        ". Ergebnis: " +
+        ergebnis +
+        ".";
+
+      updateScoreboard();
+
+      // Reset for next game automatically
+      myChoice = null;
+      peerChoice = null;
+    }
+
+    function updateScoreboard() {
+      scoreboard.innerHTML =
+        "<span>Du: " +
+        score.du +
+        "</span><span>Gegner: " +
+        score.gegner +
+        "</span><span>Unentschieden: " +
+        score.unentschieden +
+        "</span>";
+    }
+
+    // Initial state load
+    updateScoreboard();
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const choice = btn.getAttribute("data-choice");
+        if (!choice) return;
+
+        if (conn && conn.open) {
+          if (myChoice) return; // Already chose
+
+          myChoice = choice;
+          conn.send({ type: 'CHOICE', choice: choice });
+
+          if (peerChoice) {
+            evaluateRound();
+          } else {
+            statusMain.textContent = `Du hast ${choice} gewählt.`;
+            statusDetail.textContent = "Warte auf Gegner...";
+          }
+        } else {
+          myChoice = choice;
+          peerChoice = computerChoice();
+          evaluateRound();
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
