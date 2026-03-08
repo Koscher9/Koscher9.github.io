@@ -163,7 +163,12 @@ function handleNetworkMessage(data) {
 
     // Both handle Lobby back
     if (data.type === 'BACK_TO_LOBBY') {
-        window.location.href = `../../index.html?room=${roomCode}&role=${role}`;
+        const pathParts = window.location.pathname.split('/');
+        pathParts.pop(); // index.html
+        pathParts.pop(); // phase-10
+        pathParts.pop(); // projekte
+        const lobbyUrl = window.location.origin + pathParts.join('/') + `/index.html?room=${roomCode}&role=${role}`;
+        window.location.href = lobbyUrl;
     }
 }
 
@@ -626,7 +631,13 @@ if (backBtn) {
         if (roomCode && conn && conn.open) {
             e.preventDefault();
             conn.send({ type: 'BACK_TO_LOBBY' });
-            window.location.href = `../../index.html?room=${roomCode}&role=${role}`;
+
+            const pathParts = window.location.pathname.split('/');
+            pathParts.pop(); // index.html
+            pathParts.pop(); // phase-10
+            pathParts.pop(); // projekte
+            const lobbyUrl = window.location.origin + pathParts.join('/') + `/index.html?room=${roomCode}&role=${role}`;
+            window.location.href = lobbyUrl;
         }
     });
 }
