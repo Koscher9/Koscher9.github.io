@@ -7,6 +7,7 @@ let gameActive = true;
 const boardElement = document.getElementById('board');
 const statusElement = document.getElementById('status');
 const restartBtn = document.getElementById('restart-btn');
+const backBtn = document.getElementById('back-btn');
 const connectionOverlay = document.getElementById('connection-overlay');
 const connStatus = document.getElementById('conn-status');
 
@@ -65,6 +66,8 @@ function setupConnection() {
             applyMoveLocally(data.col);
         } else if (data.type === 'RESTART') {
             initGame();
+        } else if (data.type === 'BACK_TO_LOBBY') {
+            window.location.href = `../../index.html?room=${roomCode}&role=${role}`;
         }
     });
 
@@ -228,6 +231,16 @@ restartBtn.addEventListener('click', () => {
     }
     initGame();
 });
+
+if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+        if (roomCode && conn && conn.open) {
+            e.preventDefault();
+            conn.send({ type: 'BACK_TO_LOBBY' });
+            window.location.href = `../../index.html?room=${roomCode}&role=${role}`;
+        }
+    });
+}
 
 // Avoid early init if multiplayer is loading
 if (!roomCode) {

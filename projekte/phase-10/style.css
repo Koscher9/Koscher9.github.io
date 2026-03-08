@@ -1,0 +1,463 @@
+:root {
+    --bg-dark: #0f172a;
+    --bg-panel: rgba(30, 41, 59, 0.7);
+    --border-color: rgba(148, 163, 184, 0.2);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+
+    --c-red: #ef4444;
+    --c-blue: #3b82f6;
+    --c-green: #22c55e;
+    --c-yellow: #eab308;
+    --c-wild: #8b5cf6;
+    /* purple for wilds */
+    --c-skip: #64748b;
+    /* slate for skips */
+
+    --accent: #38bdf8;
+
+    --card-w: 70px;
+    --card-h: 105px;
+    --card-w-lg: 90px;
+    --card-h-lg: 135px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background: radial-gradient(circle at top right, #1e1b4b, var(--bg-dark));
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Prevent body scroll, handle in areas */
+}
+
+/* Overlays */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.95);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.overlay-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fff, var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.overlay-text {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+/* Typography & Layout */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.5rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.info-value {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.game-center-info {
+    text-align: center;
+}
+
+.game-title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 0.2rem;
+}
+
+.turn-indicator {
+    font-size: 1rem;
+    color: var(--accent);
+    font-weight: 600;
+    padding: 0.2rem 1rem;
+    border-radius: 99px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    transition: all 0.3s ease;
+}
+
+.turn-indicator.active {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: #22c55e;
+    color: #4ade80;
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+}
+
+/* Game Board */
+.game-board {
+    flex: 1;
+    display: flex;
+    padding: 1.5rem;
+    gap: 2rem;
+    overflow: hidden;
+}
+
+.piles-area {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+    background: var(--bg-panel);
+    padding: 2rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    min-width: 200px;
+}
+
+.pile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pile-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.empty-slot {
+    width: var(--card-w-lg);
+    height: var(--card-h-lg);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.play-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--bg-panel);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.play-zone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 150px;
+}
+
+.zone-label {
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.phase-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.phase-group {
+    display: flex;
+    gap: -30px;
+    /* Overlap cards in a group slightly */
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.phase-group .card {
+    margin-right: -40px;
+    /* Overlap */
+    box-shadow: -5px 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.phase-group .card:last-child {
+    margin-right: 0;
+}
+
+.divider {
+    height: 2px;
+    background: var(--border-color);
+    margin: 1rem 0;
+}
+
+/* Hand & Controls */
+.bottom-area {
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    backdrop-filter: blur(10px);
+}
+
+.hand-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.my-hand {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--card-h-lg);
+    flex-wrap: wrap;
+}
+
+.footer-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.phase-desc {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* Cards */
+.card {
+    width: var(--card-w-lg);
+    height: var(--card-h-lg);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: 800;
+    font-size: 2.5rem;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, top 0.2s;
+    user-select: none;
+    border: 2px solid transparent;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+.card.selected {
+    transform: translateY(-15px);
+    border-color: var(--accent);
+    box-shadow: 0 15px 30px rgba(56, 189, 248, 0.4);
+}
+
+/* Card Content Styling */
+.card-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 9px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Mini numbers in corners */
+.card::before,
+.card::after {
+    content: attr(data-value);
+    position: absolute;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.card::before {
+    top: 5px;
+    left: 8px;
+}
+
+.card::after {
+    bottom: 5px;
+    right: 8px;
+    transform: rotate(180deg);
+}
+
+/* Colors */
+.card.c-red {
+    color: var(--c-red);
+}
+
+.card.c-blue {
+    color: var(--c-blue);
+}
+
+.card.c-green {
+    color: var(--c-green);
+}
+
+.card.c-yellow {
+    color: var(--c-yellow);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.card.c-wild {
+    color: var(--c-wild);
+    background: #1e293b;
+    border-color: var(--c-wild);
+}
+
+.card.c-wild::before,
+.card.c-wild::after {
+    color: white;
+}
+
+.card.c-wild .card-inner {
+    color: white;
+}
+
+.card.c-skip {
+    color: white;
+    background: var(--c-skip);
+    border-color: #334155;
+}
+
+.card.c-skip::before,
+.card.c-skip::after {
+    color: white;
+}
+
+.card-back {
+    background: repeating-linear-gradient(45deg, #1e1b4b, #1e1b4b 10px, #312e81 10px, #312e81 20px);
+    border: 4px solid white;
+    color: white;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.card-back::before,
+.card-back::after {
+    display: none;
+}
+
+/* In hand specific */
+#my-hand .card {
+    width: var(--card-w);
+    height: var(--card-h);
+    font-size: 1.8rem;
+}
+
+#my-hand .card::before,
+#my-hand .card::after {
+    font-size: 0.8rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Outfit';
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn-action {
+    background: var(--accent);
+    color: #0f172a;
+}
+
+.btn-action:hover:not(:disabled) {
+    background: #7dd3fc;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: var(--c-red);
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #f87171;
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+
+.btn-outline:hover {
+    color: white;
+    border-color: white;
+}
