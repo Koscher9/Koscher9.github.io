@@ -67,7 +67,13 @@ function setupConnection() {
         } else if (data.type === 'RESTART') {
             initGame();
         } else if (data.type === 'BACK_TO_LOBBY') {
-            window.location.href = `../../index.html?room=${roomCode}&role=${role}`;
+            const pathParts = window.location.pathname.split('/');
+            // Assumes structure /projekte/4-gewinnt/index.html -> remove last 2 to get to root/index.html
+            pathParts.pop(); // remove index.html
+            pathParts.pop(); // remove 4-gewinnt
+            pathParts.pop(); // remove projekte
+            const lobbyUrl = window.location.origin + pathParts.join('/') + `/index.html?room=${roomCode}&role=${role}`;
+            window.location.href = lobbyUrl;
         }
     });
 
@@ -237,7 +243,13 @@ if (backBtn) {
         if (roomCode && conn && conn.open) {
             e.preventDefault();
             conn.send({ type: 'BACK_TO_LOBBY' });
-            window.location.href = `../../index.html?room=${roomCode}&role=${role}`;
+
+            const pathParts = window.location.pathname.split('/');
+            pathParts.pop(); // index.html
+            pathParts.pop(); // 4-gewinnt
+            pathParts.pop(); // projekte
+            const lobbyUrl = window.location.origin + pathParts.join('/') + `/index.html?room=${roomCode}&role=${role}`;
+            window.location.href = lobbyUrl;
         }
     });
 }
