@@ -33,7 +33,7 @@ const btnSortHand = document.getElementById('btn-sort-hand');
 
 const summaryOverlay = document.getElementById('summary-overlay');
 const summaryTitle = document.getElementById('summary-title');
-const summaryText = document.getElementById('summary-text');
+const summaryContent = document.getElementById('summary-content');
 const btnNextRound = document.getElementById('btn-next-round');
 
 // --- Network & State Variables ---
@@ -48,6 +48,8 @@ let conn = null;
 let myHand = [];
 let myPhaseLevel = 1;
 let opponentPhaseLevel = 1;
+let myTotalPoints = 0;
+let opponentTotalPoints = 0;
 let myPhaseCompletedThisRound = false;
 let opponentPhaseCompletedThisRound = false;
 
@@ -135,6 +137,8 @@ function handleNetworkMessage(data) {
             opponentPhaseLevel = data.hostPhaseLevel;
             myPhaseCompletedThisRound = data.guestPhaseCompleted;
             opponentPhaseCompletedThisRound = data.hostPhaseCompleted;
+            myTotalPoints = data.guestTotalPoints;
+            opponentTotalPoints = data.hostTotalPoints;
             myLaidPhases = data.guestLaid;
             opponentLaidPhases = data.hostLaid;
             discardTopCard = data.discardTop;
@@ -146,12 +150,11 @@ function handleNetworkMessage(data) {
             }
             isMyTurn = data.activePlayer === 'guest';
 
-            summaryOverlay.style.display = 'none';
             selectedIndexes = []; // Reset selection on sync
             if (data.lastDrawnCard) lastDrawnCardId = data.lastDrawnCard;
             updateUI();
         } else if (data.type === 'ROUND_OVER') {
-            handleRoundOver(data.winner);
+            handleRoundOver(data.data);
         } else if (data.type === 'ERROR') {
             alert(data.msg);
         }
@@ -220,6 +223,9 @@ function startNewRoundHost() {
     drawnThisTurn = false;
     lastDrawnCardId = null;
 
+    // IMPORTANT: hide overlay on host!
+    summaryOverlay.style.display = 'none';
+
     broadcastStateFromHost();
 }
 
@@ -249,6 +255,8 @@ function broadcastStateFromHost() {
         hostPhaseLevel: myPhaseLevel,
         guestPhaseCompleted: opponentPhaseCompletedThisRound,
         hostPhaseCompleted: myPhaseCompletedThisRound,
+        guestTotalPoints: opponentTotalPoints,
+        hostTotalPoints: myTotalPoints,
         guestLaid: opponentLaidPhases,
         hostLaid: myLaidPhases,
         discardTop: discardTopCard,
@@ -259,19 +267,45 @@ function broadcastStateFromHost() {
     });
 }
 
+function calculatePoints(hand) {
+    let pts = 0;
+    for (let c of hand) {
+        if (c.isWild) pts += 25;
+        else if (c.isSkip) pts += 15;
+        else if (c.value >= 10) pts += 10;
+        else pts += 5;
+    }
+    return pts;
+}
+
 function checkRoundOverHost() {
     if (myHand.length === 0 || masterGuestHand.length === 0) {
         const winner = myHand.length === 0 ? 'host' : 'guest';
+
+        const hostPenalty = calculatePoints(myHand);
+        const guestPenalty = calculatePoints(masterGuestHand);
+        myTotalPoints += hostPenalty;
+        opponentTotalPoints += guestPenalty;
 
         // Advance phases
         if (myPhaseCompletedThisRound) myPhaseLevel = Math.min(10, myPhaseLevel + 1);
         if (opponentPhaseCompletedThisRound) opponentPhaseLevel = Math.min(10, opponentPhaseLevel + 1);
 
+        const summaryData = {
+            winner: winner,
+            hostPhase: myPhaseLevel,
+            guestPhase: opponentPhaseLevel,
+            hostPenalty: hostPenalty,
+            guestPenalty: guestPenalty,
+            hostTotal: myTotalPoints,
+            guestTotal: opponentTotalPoints
+        };
+
         // Trigger overlay for host
-        handleRoundOver(winner);
+        handleRoundOver(summaryData);
 
         // Trigger overlay for guest
-        conn.send({ type: 'ROUND_OVER', winner: winner });
+        conn.send({ type: 'ROUND_OVER', data: summaryData });
         return true;
     }
     return false;
@@ -432,9 +466,43 @@ function hostExecuteDiscard(player, cardId) {
     broadcastStateFromHost();
 }
 
-function handleRoundOver(winner) {
-    summaryTitle.textContent = winner === role ? "Du gewinnst die Runde!" : "Gegner gewinnt die Runde!";
-    summaryText.innerHTML = `Du bist nun auf Phase ${myPhaseLevel}.<br>Gegner ist auf Phase ${opponentPhaseLevel}.`;
+function handleRoundOver(data) {
+    summaryTitle.textContent = data.winner === role ? "Du gewinnst die Runde!" : "Gegner gewinnt die Runde!";
+
+    // Determine my stats vs opponent stats based on role
+    const myPhase = role === 'host' ? data.hostPhase : data.guestPhase;
+    const oppPhase = role === 'host' ? data.guestPhase : data.hostPhase;
+    const myPenalty = role === 'host' ? data.hostPenalty : data.guestPenalty;
+    const oppPenalty = role === 'host' ? data.guestPenalty : data.hostPenalty;
+    const myTotal = role === 'host' ? data.hostTotal : data.guestTotal;
+    const oppTotal = role === 'host' ? data.guestTotal : data.hostTotal;
+
+    summaryContent.innerHTML = `
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>Spieler</th>
+                    <th>Nächste Phase</th>
+                    <th>Straf-Punkte</th>
+                    <th>Gesamt-Punkte</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Du</strong></td>
+                    <td>Phase ${myPhase}</td>
+                    <td>+${myPenalty}</td>
+                    <td><strong>${myTotal}</strong></td>
+                </tr>
+                <tr>
+                    <td>Gegner</td>
+                    <td>Phase ${oppPhase}</td>
+                    <td>+${oppPenalty}</td>
+                    <td><strong>${oppTotal}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    `;
 
     if (role === 'host') {
         btnNextRound.style.display = 'inline-block';
@@ -443,7 +511,7 @@ function handleRoundOver(winner) {
         };
     } else {
         btnNextRound.style.display = 'none';
-        summaryText.innerHTML += "<br><br>Warte auf Host...";
+        summaryContent.innerHTML += "<p class='overlay-text'>Warte auf Host...</p>";
     }
     summaryOverlay.style.display = 'flex';
 }
