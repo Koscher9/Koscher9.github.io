@@ -150,6 +150,7 @@ function handleNetworkMessage(data) {
             }
             isMyTurn = data.activePlayer === 'guest';
 
+            summaryOverlay.style.display = 'none'; // Ensure guest overlay hides on new round
             selectedIndexes = []; // Reset selection on sync
             if (data.lastDrawnCard) lastDrawnCardId = data.lastDrawnCard;
             updateUI();
