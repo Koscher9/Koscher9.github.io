@@ -62,6 +62,7 @@ let masterOpponentHandCount = 10;
 let isMyTurn = false;
 let drawnThisTurn = false;
 let selectedIndexes = []; // specific indices in myHand
+let lastDrawnCardId = null; // for highlighting
 
 // Sorting State
 let sortMode = 'number'; // 'number' or 'color'
@@ -139,10 +140,14 @@ function handleNetworkMessage(data) {
             discardTopCard = data.discardTop;
             deckEmpty = data.deckEmpty;
             masterOpponentHandCount = data.hostHandCount;
+            if (data.activePlayer === 'guest' && !isMyTurn) {
+                lastDrawnCardId = null; // Clear glow when my turn starts
+            }
             isMyTurn = data.activePlayer === 'guest';
 
             summaryOverlay.style.display = 'none';
             selectedIndexes = []; // Reset selection on sync
+            if (data.lastDrawnCard) lastDrawnCardId = data.lastDrawnCard;
             updateUI();
         } else if (data.type === 'ROUND_OVER') {
             handleRoundOver(data.winner);
@@ -156,13 +161,13 @@ function handleNetworkMessage(data) {
             hostExecuteDraw('guest', data.fromDiscard);
         } else if (data.type === 'REQ_PLAY_PHASE') {
             if (isMyTurn) return;
-            hostExecutePlayPhase('guest', data.idxs);
+            hostExecutePlayPhase('guest', data.cardIds);
         } else if (data.type === 'REQ_HIT') {
             if (isMyTurn) return;
-            hostExecuteHit('guest', data.cardIdx, data.targetPlayer, data.targetGroupIdx);
+            hostExecuteHit('guest', data.cardId, data.targetPlayer, data.targetGroupIdx);
         } else if (data.type === 'REQ_DISCARD') {
             if (isMyTurn) return;
-            hostExecuteDiscard('guest', data.idx);
+            hostExecuteDiscard('guest', data.cardId);
         }
     }
 
@@ -212,6 +217,7 @@ function startNewRoundHost() {
 
     isMyTurn = true; // Host always starts for simplicity
     drawnThisTurn = false;
+    lastDrawnCardId = null;
 
     broadcastStateFromHost();
 }
@@ -247,7 +253,8 @@ function broadcastStateFromHost() {
         discardTop: discardTopCard,
         deckEmpty: deckEmpty,
         hostHandCount: myHand.length,
-        activePlayer: isMyTurn ? 'host' : 'guest'
+        activePlayer: isMyTurn ? 'host' : 'guest',
+        lastDrawnCard: lastDrawnCardId
     });
 }
 
@@ -292,15 +299,17 @@ function hostExecuteDraw(player, fromDiscard) {
     if (player === 'host') {
         myHand.push(card);
         drawnThisTurn = true;
+        lastDrawnCardId = card.id;
     } else {
         masterGuestHand.push(card);
+        lastDrawnCardId = card.id;
         // Guest handles drawnThisTurn locally via activePlayer
     }
 
     broadcastStateFromHost();
 }
 
-function hostExecutePlayPhase(player, cardIndices) {
+function hostExecutePlayPhase(player, cardIds) {
     const hand = player === 'host' ? myHand : masterGuestHand;
     const phaseLevel = player === 'host' ? myPhaseLevel : opponentPhaseLevel;
     const isCompleted = player === 'host' ? myPhaseCompletedThisRound : opponentPhaseCompletedThisRound;
@@ -310,7 +319,14 @@ function hostExecutePlayPhase(player, cardIndices) {
         return;
     }
 
-    const selectedCards = cardIndices.map(i => hand[i]);
+    // Map strict card IDs to actual cards
+    const selectedCards = cardIds.map(id => hand.find(c => c.id === id)).filter(Boolean);
+
+    if (selectedCards.length !== cardIds.length) {
+        if (player === 'guest') conn.send({ type: 'ERROR', msg: "Karten nicht gefunden (Sync-Fehler)." });
+        return;
+    }
+
     const phaseDef = PHASES.find(p => p.id === phaseLevel);
 
     if (phaseDef && phaseDef.validate(selectedCards)) {
@@ -322,11 +338,17 @@ function hostExecutePlayPhase(player, cardIndices) {
         if (player === 'host') {
             grouped.forEach(g => myLaidPhases.push(g));
             myPhaseCompletedThisRound = true;
-            cardIndices.sort((a, b) => b - a).forEach(i => myHand.splice(i, 1));
+            cardIds.forEach(id => {
+                const i = myHand.findIndex(c => c.id === id);
+                if (i > -1) myHand.splice(i, 1);
+            });
         } else {
             grouped.forEach(g => opponentLaidPhases.push(g));
             opponentPhaseCompletedThisRound = true;
-            cardIndices.sort((a, b) => b - a).forEach(i => masterGuestHand.splice(i, 1));
+            cardIds.forEach(id => {
+                const i = masterGuestHand.findIndex(c => c.id === id);
+                if (i > -1) masterGuestHand.splice(i, 1);
+            });
         }
 
         if (!checkRoundOverHost()) broadcastStateFromHost();
@@ -336,7 +358,7 @@ function hostExecutePlayPhase(player, cardIndices) {
     }
 }
 
-function hostExecuteHit(player, cardIdx, targetOwner, targetGroupIdx) {
+function hostExecuteHit(player, cardId, targetOwner, targetGroupIdx) {
     const hand = player === 'host' ? myHand : masterGuestHand;
     const meCompleted = player === 'host' ? myPhaseCompletedThisRound : opponentPhaseCompletedThisRound;
 
@@ -346,7 +368,10 @@ function hostExecuteHit(player, cardIdx, targetOwner, targetGroupIdx) {
         return;
     }
 
+    const cardIdx = hand.findIndex(c => c.id === cardId);
+    if (cardIdx === -1) return;
     const card = hand[cardIdx];
+
     const targetPhases = targetOwner === player ?
         (player === 'host' ? myLaidPhases : opponentLaidPhases) :
         (player === 'host' ? opponentLaidPhases : myLaidPhases);
@@ -376,11 +401,10 @@ function hostExecuteHit(player, cardIdx, targetOwner, targetGroupIdx) {
     if (!checkRoundOverHost()) broadcastStateFromHost();
 }
 
-function hostExecuteDiscard(player, cardIdx) {
-    // Only allow discard if opponent hasn't been skipped, but we skip "skip" logic for MVP turn flow,
-    // or we implement simple skip: Skip cards just end turn but don't do anything complex yet.
-
+function hostExecuteDiscard(player, cardId) {
     const hand = player === 'host' ? myHand : masterGuestHand;
+    const cardIdx = hand.findIndex(c => c.id === cardId);
+    if (cardIdx === -1) return;
     const card = hand[cardIdx];
 
     masterDiscard.push(card);
@@ -428,6 +452,7 @@ function handleRoundOver(winner) {
 // Deck / Discard click
 deckElement.addEventListener('click', () => {
     if (!isMyTurn || drawnThisTurn) return;
+    lastDrawnCardId = null; // reset glow
     if (role === 'host') {
         hostExecuteDraw('host', false);
     } else {
@@ -442,6 +467,7 @@ discardTopElement.addEventListener('click', () => {
         alert("Aussetzer dürfen nicht gezogen werden!");
         return;
     }
+    lastDrawnCardId = null; // reset glow
     if (role === 'host') {
         hostExecuteDraw('host', true);
     } else {
@@ -454,10 +480,11 @@ discardTopElement.addEventListener('click', () => {
 btnPlayPhase.addEventListener('click', () => {
     if (!isMyTurn || !drawnThisTurn || myPhaseCompletedThisRound || selectedIndexes.length === 0) return;
 
+    const cardIds = selectedIndexes.map(i => myHand[i].id);
     if (role === 'host') {
-        hostExecutePlayPhase('host', selectedIndexes);
+        hostExecutePlayPhase('host', cardIds);
     } else {
-        conn.send({ type: 'REQ_PLAY_PHASE', idxs: selectedIndexes });
+        conn.send({ type: 'REQ_PLAY_PHASE', cardIds: cardIds });
     }
 });
 
@@ -474,11 +501,13 @@ btnHitCard.addEventListener('click', () => {
 btnDiscard.addEventListener('click', () => {
     if (!isMyTurn || !drawnThisTurn || selectedIndexes.length !== 1) return;
 
-    const idx = selectedIndexes[0];
+    const cardId = myHand[selectedIndexes[0]].id;
+
+    // Once discarded, clear drawn status / turn 
     if (role === 'host') {
-        hostExecuteDiscard('host', idx);
+        hostExecuteDiscard('host', cardId);
     } else {
-        conn.send({ type: 'REQ_DISCARD', idx: idx });
+        conn.send({ type: 'REQ_DISCARD', cardId: cardId });
         isMyTurn = false; // Optimistic lock
         updateUI();
     }
@@ -551,7 +580,11 @@ function updateUI() {
     myHandContainer.innerHTML = '';
     myHand.forEach((card, idx) => {
         const cEl = document.createElement('div');
-        cEl.className = `card ${card.color} ${selectedIndexes.includes(idx) ? 'selected' : ''}`;
+        let classes = `card ${card.color} `;
+        if (selectedIndexes.includes(idx)) classes += 'selected ';
+        if (card.id === lastDrawnCardId) classes += 'glow-green ';
+
+        cEl.className = classes;
         cEl.innerHTML = `<div class="card-inner">${getCardLabel(card)}</div>`;
         cEl.setAttribute('data-value', getCardLabel(card));
 
@@ -591,13 +624,13 @@ function renderPhases(container, phasesGroupArr, ownerId) {
             // Hit logic listener
             cEl.onclick = () => {
                 if (btnHitCard.disabled || selectedIndexes.length !== 1) return;
-                const cardIdx = selectedIndexes[0];
+                const cardId = myHand[selectedIndexes[0]].id;
                 const targetOwner = ownerId === 'host' ? role : (role === 'host' ? 'guest' : 'host');
 
                 if (role === 'host') {
-                    hostExecuteHit('host', cardIdx, targetOwner, groupIdx);
+                    hostExecuteHit('host', cardId, targetOwner, groupIdx);
                 } else {
-                    conn.send({ type: 'REQ_HIT', cardIdx: cardIdx, targetPlayer: targetOwner, targetGroupIdx: groupIdx });
+                    conn.send({ type: 'REQ_HIT', cardId: cardId, targetPlayer: targetOwner, targetGroupIdx: groupIdx });
                 }
             };
 
