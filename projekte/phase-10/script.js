@@ -142,6 +142,7 @@ function handleNetworkMessage(data) {
             masterOpponentHandCount = data.hostHandCount;
             if (data.activePlayer === 'guest' && !isMyTurn) {
                 lastDrawnCardId = null; // Clear glow when my turn starts
+                drawnThisTurn = false; // FINALLY reset the optimistic lock!
             }
             isMyTurn = data.activePlayer === 'guest';
 
@@ -509,6 +510,7 @@ btnDiscard.addEventListener('click', () => {
     } else {
         conn.send({ type: 'REQ_DISCARD', cardId: cardId });
         isMyTurn = false; // Optimistic lock
+        drawnThisTurn = false; // Reset to ensure safe state
         updateUI();
     }
 });
