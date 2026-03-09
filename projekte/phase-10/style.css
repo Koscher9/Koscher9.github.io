@@ -68,6 +68,35 @@ body {
     margin-bottom: 2rem;
 }
 
+/* Summary Table */
+.summary-table {
+    width: 100%;
+    max-width: 400px;
+    margin: 1rem auto 2rem;
+    border-collapse: collapse;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    color: var(--text-main);
+}
+
+.summary-table th,
+.summary-table td {
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-table th {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.summary-table tr:last-child td {
+    border-bottom: none;
+}
+
 /* Typography & Layout */
 .top-bar {
     display: flex;
