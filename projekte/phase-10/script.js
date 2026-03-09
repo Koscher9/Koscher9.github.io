@@ -314,19 +314,18 @@ function hostExecutePlayPhase(player, cardIndices) {
     const phaseDef = PHASES.find(p => p.id === phaseLevel);
 
     if (phaseDef && phaseDef.validate(selectedCards)) {
-        // Group them visually (basic split if multiple sets, but for simplicity we keep them as one big group initially, or logic can split them)
-        // A robust validation would return the groups, here we just slap them in one array
+        // Group them visually based on the phase definition.
+        // Instead of one big sorted group, we split them smartly.
         const sorted = sortCardsWildsLast(selectedCards);
+        const grouped = smartGroup(sorted, phaseLevel);
 
         if (player === 'host') {
-            myLaidPhases.push(sorted);
+            grouped.forEach(g => myLaidPhases.push(g));
             myPhaseCompletedThisRound = true;
-            // Remove from hand
             cardIndices.sort((a, b) => b - a).forEach(i => myHand.splice(i, 1));
         } else {
-            opponentLaidPhases.push(sorted);
+            grouped.forEach(g => opponentLaidPhases.push(g));
             opponentPhaseCompletedThisRound = true;
-            // Remove from hand
             cardIndices.sort((a, b) => b - a).forEach(i => masterGuestHand.splice(i, 1));
         }
 
@@ -622,6 +621,74 @@ function sortCardsWildsLast(cards) {
         if (b.isWild) return -1;
         return a.value - b.value;
     });
+}
+
+// Splits the laid cards into visual groups (e.g. 2 Drillinge -> 2 groups)
+function smartGroup(sortedCards, phaseId) {
+    if (sortedCards.length === 0) return [[]];
+
+    const splits = {
+        1: [3, 3], // 2 Drillinge
+        2: [3, 4], // Drilling + Viererfolge
+        3: [4, 4], // Vierling + Viererfolge
+        4: [sortedCards.length], // Siebenerfolge (alles eins)
+        5: [sortedCards.length], // Achterfolge
+        6: [sortedCards.length], // Neunerfolge
+        7: [4, 4], // 2 Vierlinge
+        8: [sortedCards.length], // 7 gleiche Farbe
+        9: [5, 2], // Fünfling + Zwilling
+        10: [5, 3] // Fünfling + Drilling
+    };
+
+    const targetSplits = splits[phaseId] || [sortedCards.length];
+
+    // For sets, we should ideally group identical values together instead of blind length splitting.
+    // If we just want to split out the sets (Drilling, Vierling, etc), we find the groups of identical numbers first.
+    let groups = [];
+    let remaining = [...sortedCards];
+
+    // Simple heuristic: if the phase has multiple groups (e.g., [3, 4]), try to extract the sets first.
+    if (targetSplits.length > 1) {
+        targetSplits.forEach(size => {
+            // Find a value that appears `size` times (ignoring wilds for a moment, or including wilds)
+            // Just blind split for MVP, but to prevent splitting a set in half, we can sort by value counts.
+            // Let's do a simple count map.
+            let extracted = [];
+            let valCounts = {};
+            remaining.forEach(c => { if (!c.isWild) valCounts[c.value] = (valCounts[c.value] || 0) + 1; });
+
+            // Find a value with enough cards (or close enough that wilds can fill)
+            let bestVal = Object.keys(valCounts).find(v => valCounts[v] > 1);
+
+            if (size <= 5 && bestVal) { // Trying to extract a SET
+                for (let i = remaining.length - 1; i >= 0; i--) {
+                    if (extracted.length < size && (remaining[i].value == bestVal || remaining[i].isWild)) {
+                        extracted.push(remaining.splice(i, 1)[0]);
+                    }
+                }
+            } else {
+                // Must be a run or remaining, just slice
+                extracted = remaining.splice(0, size);
+            }
+
+            // If we didn't get enough (e.g. only 1 card and rest wilds), fill from remaining.
+            while (extracted.length < size && remaining.length > 0) {
+                extracted.push(remaining.shift());
+            }
+
+            if (extracted.length > 0) groups.push(extracted.reverse());
+        });
+
+        // Put any accidental leftovers into the last group
+        if (remaining.length > 0 && groups.length > 0) {
+            groups[groups.length - 1].push(...remaining);
+        }
+    } else {
+        // Single group phase (Run, Color)
+        groups.push([...remaining]);
+    }
+
+    return groups.length > 0 ? groups : [sortedCards];
 }
 
 // Extremely simplified permissive validation for MVP since writing a complete phase 10 validator is 300+ lines.
