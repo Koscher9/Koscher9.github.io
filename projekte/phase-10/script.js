@@ -29,6 +29,8 @@ const opponentPhaseContainer = document.getElementById('opponent-phase-container
 const btnPlayPhase = document.getElementById('btn-play-phase');
 const btnHitCard = document.getElementById('btn-hit-card');
 const btnDiscard = document.getElementById('btn-discard');
+const btnSortHand = document.getElementById('btn-sort-hand');
+
 const summaryOverlay = document.getElementById('summary-overlay');
 const summaryTitle = document.getElementById('summary-title');
 const summaryText = document.getElementById('summary-text');
@@ -60,6 +62,9 @@ let masterOpponentHandCount = 10;
 let isMyTurn = false;
 let drawnThisTurn = false;
 let selectedIndexes = []; // specific indices in myHand
+
+// Sorting State
+let sortMode = 'number'; // 'number' or 'color'
 
 // --- Host Master State ---
 // The host holds the real deck, the discard pile, and the guest's hand.
@@ -480,8 +485,43 @@ btnDiscard.addEventListener('click', () => {
     }
 });
 
+btnSortHand.addEventListener('click', () => {
+    sortMode = sortMode === 'number' ? 'color' : 'number';
+    btnSortHand.textContent = sortMode === 'number' ? 'Sortierung: Zahl' : 'Sortierung: Farbe';
+    updateUI();
+});
+
+function sortMyHand() {
+    myHand.sort((a, b) => {
+        // Skips always at very end, Wilds just before skips
+        if (a.isSkip && !b.isSkip) return 1;
+        if (!a.isSkip && b.isSkip) return -1;
+        if (a.isWild && !b.isWild) return 1;
+        if (!a.isWild && b.isWild) return -1;
+
+        if (sortMode === 'color') {
+            const colorOrder = { 'c-blue': 1, 'c-green': 2, 'c-red': 3, 'c-yellow': 4, 'c-wild': 5, 'c-skip': 6 };
+            const cA = colorOrder[a.color] || 9;
+            const cB = colorOrder[b.color] || 9;
+            if (cA !== cB) return cA - cB;
+            // If same color, sort by value
+            return a.value - b.value;
+        } else {
+            // Sort by number
+            return a.value - b.value;
+        }
+    });
+}
+
 // UI Updater
 function updateUI() {
+    // Preserve selection across sorts
+    const selectedIds = selectedIndexes.map(idx => myHand[idx].id);
+    sortMyHand();
+    selectedIndexes = myHand
+        .map((c, i) => selectedIds.includes(c.id) ? i : -1)
+        .filter(i => i !== -1);
+
     // Status borders
     if (isMyTurn) {
         turnIndicator.textContent = "Du bist am Zug";
