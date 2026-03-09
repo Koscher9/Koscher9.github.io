@@ -540,15 +540,48 @@ body {
         gap: 1rem;
     }
 
-    /* Scaling cards slightly down for mobile */
+    /* Scaling cards significantly down for mobile */
     :root {
-        --card-w: 60px;
-        --card-h: 90px;
-        --card-w-lg: 70px;
-        --card-h-lg: 105px;
+        --card-w: 45px;
+        --card-h: 70px;
+        --card-w-lg: 55px;
+        --card-h-lg: 85px;
     }
 
     .card {
+        font-size: 1.5rem;
+    }
+
+    /* Smaller mini numbers on edges for mobile */
+    .card::before,
+    .card::after {
+        font-size: 0.7rem;
+        top: 3px;
+        left: 5px;
+    }
+
+    .card::after {
+        bottom: 3px;
+        right: 5px;
+    }
+
+    .my-hand .card {
+        font-size: 1.3rem;
+        /* Hand cards font size */
+        margin-right: -10px;
+        /* Overlap them a tiny bit to fit more */
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .my-hand {
+        padding-bottom: 5px;
+        /* Less space for scrollbar */
+        gap: 0;
+        /* use margin overlap instead */
+    }
+
+    /* Make overlays responsive */
+    .overlay-title {
         font-size: 2rem;
     }
 }
