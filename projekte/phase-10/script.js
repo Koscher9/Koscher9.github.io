@@ -30,6 +30,7 @@ const btnPlayPhase = document.getElementById('btn-play-phase');
 const btnHitCard = document.getElementById('btn-hit-card');
 const btnDiscard = document.getElementById('btn-discard');
 const btnSortHand = document.getElementById('btn-sort-hand');
+const btnDevNext = document.getElementById('btn-dev-next');
 
 const summaryOverlay = document.getElementById('summary-overlay');
 const summaryTitle = document.getElementById('summary-title');
@@ -52,6 +53,7 @@ let myTotalPoints = 0;
 let opponentTotalPoints = 0;
 let myPhaseCompletedThisRound = false;
 let opponentPhaseCompletedThisRound = false;
+let roundStarter = 'guest'; // Will immediately flip to 'host' in first startNewRoundHost
 
 let myLaidPhases = []; // Array of groups (arrays) of cards
 let opponentLaidPhases = [];
@@ -83,6 +85,7 @@ if (!roomCode || !role) {
 } else {
     overlay.style.display = 'flex';
     if (role === 'host') {
+        if (btnDevNext) btnDevNext.style.display = 'inline-block';
         peer = new Peer(`koscher9-game-p10-${roomCode}`);
         statusText.textContent = "Host: Warte auf Gegner...";
 
@@ -189,6 +192,14 @@ function handleNetworkMessage(data) {
 
 // --- Host Game Logic Engine ---
 
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
 function buildDeck() {
     let deck = [];
     for (const color of COLORS) {
@@ -200,7 +211,7 @@ function buildDeck() {
     for (let i = 1; i <= 8; i++) deck.push({ id: `w-${i}`, color: 'c-wild', value: 0, isWild: true, isSkip: false });
     for (let i = 1; i <= 4; i++) deck.push({ id: `s-${i}`, color: 'c-skip', value: 0, isWild: false, isSkip: true });
 
-    return deck.sort(() => Math.random() - 0.5);
+    return shuffleArray(deck);
 }
 
 function startNewRoundHost() {
@@ -220,7 +231,10 @@ function startNewRoundHost() {
     myPhaseCompletedThisRound = false;
     opponentPhaseCompletedThisRound = false;
 
-    isMyTurn = true; // Host always starts for simplicity
+    // Alternate starter
+    roundStarter = roundStarter === 'host' ? 'guest' : 'host';
+    isMyTurn = (roundStarter === 'host');
+
     drawnThisTurn = false;
     lastDrawnCardId = null;
 
@@ -233,7 +247,7 @@ function startNewRoundHost() {
 function checkDeckReshuffle() {
     if (masterDeck.length === 0 && masterDiscard.length > 1) {
         const top = masterDiscard.pop();
-        masterDeck = masterDiscard.sort(() => Math.random() - 0.5);
+        masterDeck = shuffleArray(masterDiscard);
         masterDiscard = [top];
         discardTopCard = top;
     }
@@ -416,16 +430,92 @@ function hostExecuteHit(player, cardId, targetOwner, targetGroupIdx) {
 
     if (!group) return;
 
-    // Simple permissive hitting: To keep it fun and simple for now, if you try to hit, it just appends it.
-    // Real phase 10 requires validating if the card actually matches the set/run.
-    // For V1 MVP, we allow appending.
     if (card.isSkip) {
         if (player === 'guest') conn.send({ type: 'ERROR', msg: "Aussetzer können nicht angelegt werden." });
         if (player === 'host') alert("Aussetzer können nicht angelegt werden.");
         return;
     }
 
-    group.push(card);
+    // --- Strict Hit Validation ---
+    // Identify what kind of group this is
+    if (group.length >= 2) {
+        let isSet = false;
+        let isColor = false;
+
+        // Find first non-wild to determine type
+        const realCards = group.filter(c => !c.isWild);
+        if (realCards.length >= 2) {
+            if (realCards[0].value === realCards[1].value) isSet = true;
+            else if (realCards[0].color === realCards[1].color && Math.abs(realCards[0].value - realCards[1].value) !== 1) {
+                // Not a run, but same color -> Color Phase
+                isColor = true;
+            }
+        }
+
+        if (isSet) {
+            // Must match value
+            const targetVal = realCards[0].value;
+            if (!card.isWild && card.value !== targetVal) {
+                const msg = "Falscher Wert für diesen Drilling/Vierling.";
+                if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
+                return;
+            }
+        } else if (isColor) {
+            // Must match color
+            const targetCol = realCards[0].color;
+            if (!card.isWild && card.color !== targetCol) {
+                const msg = "Falsche Farbe für diese Farb-Phase.";
+                if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
+                return;
+            }
+        } else {
+            // Must be a run (Folge)
+            // A run can only be extended by the next higher or next lower number.
+            // Since wilds can be anywhere, we evaluate the logical min/max of the run.
+            let minVal = 99;
+            let maxVal = -1;
+            let curVal = realCards[0].value;
+            let firstRealIdx = group.indexOf(realCards[0]);
+
+            // Reconstruct bounds based on first real card
+            let currentHead = curVal - firstRealIdx; // logical value of group[0]
+            let currentTail = currentHead + group.length - 1; // logical value of group[last]
+
+            if (card.isWild) {
+                // Wild can extend anywhere as long as we don't exceed 12 or go below 1
+                if (currentTail >= 12 && currentHead <= 1) {
+                    const msg = "Folge kann in keine Richtung mehr erweitert werden.";
+                    if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
+                    return;
+                }
+                // Just visually append or prepend
+                if (currentTail < 12) {
+                    group.push(card);
+                } else {
+                    group.unshift(card);
+                }
+            } else {
+                if (card.value === currentTail + 1) {
+                    group.push(card);
+                } else if (card.value === currentHead - 1) {
+                    group.unshift(card);
+                } else {
+                    const msg = `Karte passt nicht. Erwartet: ${currentHead - 1} oder ${currentTail + 1}`;
+                    if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
+                    return;
+                }
+            }
+        }
+    }
+
+    if (card.isWild || group.includes(card)) {
+        // Already appended by wild logic
+    } else {
+        // Sets and Colors just append
+        group.push(card);
+    }
+
+    // ----------------------------
 
     // Remove from hand
     if (player === 'host') {
@@ -850,5 +940,37 @@ if (backBtn) {
             const lobbyUrl = window.location.origin + pathParts.join('/') + `/index.html?room=${roomCode}&role=${role}`;
             window.location.href = lobbyUrl;
         }
+    });
+}
+
+// Dev Test Button
+if (btnDevNext) {
+    btnDevNext.addEventListener('click', () => {
+        if (role !== 'host') return;
+
+        // Force complete phases for testing
+        myPhaseCompletedThisRound = true;
+        opponentPhaseCompletedThisRound = true;
+
+        const hostPenalty = calculatePoints(myHand);
+        const guestPenalty = calculatePoints(masterGuestHand);
+        myTotalPoints += hostPenalty;
+        opponentTotalPoints += guestPenalty;
+
+        myPhaseLevel = Math.min(10, myPhaseLevel + 1);
+        opponentPhaseLevel = Math.min(10, opponentPhaseLevel + 1);
+
+        const summaryData = {
+            winner: 'host', // dummy
+            hostPhase: myPhaseLevel,
+            guestPhase: opponentPhaseLevel,
+            hostPenalty: hostPenalty,
+            guestPenalty: guestPenalty,
+            hostTotal: myTotalPoints,
+            guestTotal: opponentTotalPoints
+        };
+
+        handleRoundOver(summaryData);
+        conn.send({ type: 'ROUND_OVER', data: summaryData });
     });
 }
