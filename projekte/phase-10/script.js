@@ -303,13 +303,28 @@ function checkRoundOverHost() {
         opponentTotalPoints += guestPenalty;
 
         // Advance phases
-        if (myPhaseCompletedThisRound) myPhaseLevel = Math.min(10, myPhaseLevel + 1);
-        if (opponentPhaseCompletedThisRound) opponentPhaseLevel = Math.min(10, opponentPhaseLevel + 1);
+        if (myPhaseCompletedThisRound) myPhaseLevel++;
+        if (opponentPhaseCompletedThisRound) opponentPhaseLevel++;
+
+        let isGameOver = false;
+        let finalWinner = '';
+        if (myPhaseLevel > 10 && opponentPhaseLevel > 10) {
+            isGameOver = true;
+            finalWinner = myTotalPoints <= opponentTotalPoints ? 'host' : 'guest';
+        } else if (myPhaseLevel > 10) {
+            isGameOver = true;
+            finalWinner = 'host';
+        } else if (opponentPhaseLevel > 10) {
+            isGameOver = true;
+            finalWinner = 'guest';
+        }
 
         const summaryData = {
             winner: winner,
-            hostPhase: myPhaseLevel,
-            guestPhase: opponentPhaseLevel,
+            isGameOver: isGameOver,
+            finalWinner: finalWinner,
+            hostPhase: Math.min(10, myPhaseLevel),
+            guestPhase: Math.min(10, opponentPhaseLevel),
             hostPenalty: hostPenalty,
             guestPenalty: guestPenalty,
             hostTotal: myTotalPoints,
@@ -383,7 +398,10 @@ function hostExecutePlayPhase(player, cardIds) {
         // Group them visually based on the phase definition.
         // Instead of one big sorted group, we split them smartly.
         const sorted = sortCardsWildsLast(selectedCards);
-        const grouped = smartGroup(sorted, phaseLevel);
+        let grouped = smartGroup(sorted, phaseLevel);
+
+        // Now aesthetically sort each group so wilds are inline
+        grouped = grouped.map(g => sortPhaseGroupInline(g));
 
         if (player === 'host') {
             grouped.forEach(g => myLaidPhases.push(g));
@@ -515,6 +533,11 @@ function hostExecuteHit(player, cardId, targetOwner, targetGroupIdx) {
         group.push(card);
     }
 
+    // Sort visually after hit
+    const newGroup = sortPhaseGroupInline(group);
+    group.length = 0;
+    group.push(...newGroup);
+
     // ----------------------------
 
     // Remove from hand
@@ -558,7 +581,17 @@ function hostExecuteDiscard(player, cardId) {
 }
 
 function handleRoundOver(data) {
-    summaryTitle.textContent = data.winner === role ? "Du gewinnst die Runde!" : "Gegner gewinnt die Runde!";
+    if (data.isGameOver) {
+        summaryTitle.textContent = data.finalWinner === role ? "SPIELSIEG! Du hast Phase 10 geschafft!" : "Verloren! Gegner hat Phase 10 geschafft!";
+        summaryTitle.style.background = data.finalWinner === role ? "linear-gradient(135deg, #fff, #4ade80)" : "linear-gradient(135deg, #fff, #f87171)";
+        summaryTitle.style.webkitBackgroundClip = "text";
+        summaryTitle.style.webkitTextFillColor = "transparent";
+    } else {
+        summaryTitle.textContent = data.winner === role ? "Du gewinnst die Runde!" : "Gegner gewinnt die Runde!";
+        summaryTitle.style.background = "none";
+        summaryTitle.style.webkitBackgroundClip = "initial";
+        summaryTitle.style.webkitTextFillColor = "initial";
+    }
 
     // Determine my stats vs opponent stats based on role
     const myPhase = role === 'host' ? data.hostPhase : data.guestPhase;
@@ -587,7 +620,7 @@ function handleRoundOver(data) {
                 </tr>
                 <tr>
                     <td>Gegner</td>
-                    <td>Phase ${oppPhase}</td>
+                    <td>Phase ${oppPhase}${data.isGameOver ? ' (Ende)' : ''}</td>
                     <td>+${oppPenalty}</td>
                     <td><strong>${oppTotal}</strong></td>
                 </tr>
@@ -595,7 +628,22 @@ function handleRoundOver(data) {
         </table>
     `;
 
-    if (role === 'host') {
+    if (data.isGameOver) {
+        summaryContent.innerHTML += `<p class="overlay-text">Das Spiel ist vorbei!</p>`;
+        btnNextRound.style.display = 'none';
+
+        // Add a button to return to lobby directly
+        if (!document.getElementById('btn-gameover-lobby')) {
+            const btn = document.createElement('a');
+            const pathParts = window.location.pathname.split('/');
+            pathParts.pop(); pathParts.pop(); pathParts.pop();
+            btn.href = window.location.origin + pathParts.join('/') + `/index.html?room=${roomCode}&role=${role}`;
+            btn.id = 'btn-gameover-lobby';
+            btn.className = 'btn btn-outline';
+            btn.textContent = 'Zurück zur Übersicht';
+            summaryContent.appendChild(btn);
+        }
+    } else if (role === 'host') {
         btnNextRound.style.display = 'inline-block';
         btnNextRound.onclick = () => {
             startNewRoundHost();
@@ -885,6 +933,54 @@ function smartGroup(sortedCards, phaseId) {
     return groups.length > 0 ? groups : [sortedCards];
 }
 
+// Visually sorts a group so that wilds appear inline (e.g. 3-4-W-6)
+function sortPhaseGroupInline(group) {
+    if (group.length < 2) return group;
+    const realCards = group.filter(c => !c.isWild);
+    const wilds = group.filter(c => c.isWild);
+    if (realCards.length === 0 || wilds.length === 0) return group; // fully wild or no wilds
+
+    let isSet = false;
+    let isColor = false;
+    if (realCards.length >= 2) {
+        if (realCards[0].value === realCards[1].value) isSet = true;
+        else if (realCards[0].color === realCards[1].color && Math.abs(realCards[0].value - realCards[1].value) !== 1) isColor = true;
+    }
+
+    if (isSet) {
+        // Just stack wilds at the end, doesn't matter visually
+        return [...realCards, ...wilds];
+    } else if (isColor && !isSet && Math.abs(realCards[0].value - (realCards[1] ? realCards[1].value : realCards[0].value)) !== 1) {
+        // Color stack, sort by value and put wilds at end
+        realCards.sort((a, b) => a.value - b.value);
+        return [...realCards, ...wilds];
+    } else {
+        // RUN (Folge). We need to interleave wilds into the holes.
+        realCards.sort((a, b) => a.value - b.value);
+        let result = [];
+        let rIdx = 0;
+        let expectedVal = realCards[0].value;
+        let wildPool = [...wilds];
+
+        while (wildPool.length > 0 || rIdx < realCards.length) {
+            if (rIdx < realCards.length && realCards[rIdx].value === expectedVal) {
+                result.push(realCards[rIdx]);
+                rIdx++;
+            } else if (wildPool.length > 0) {
+                // Hole found, plug with wild
+                result.push(wildPool.pop());
+            } else {
+                // No wilds left but still real cards? 
+                // Should be impossible if validated correctly, but just in case:
+                result.push(realCards[rIdx]);
+                rIdx++;
+            }
+            expectedVal++;
+        }
+        return result;
+    }
+}
+
 // Extremely simplified permissive validation for MVP since writing a complete phase 10 validator is 300+ lines.
 // We just verify it has enough cards and no skips.
 function hasNoSkips(cards) {
@@ -957,8 +1053,8 @@ if (btnDevNext) {
         myTotalPoints += hostPenalty;
         opponentTotalPoints += guestPenalty;
 
-        myPhaseLevel = Math.min(10, myPhaseLevel + 1);
-        opponentPhaseLevel = Math.min(10, opponentPhaseLevel + 1);
+        myPhaseLevel++;
+        opponentPhaseLevel++;
 
         const summaryData = {
             winner: 'host', // dummy
