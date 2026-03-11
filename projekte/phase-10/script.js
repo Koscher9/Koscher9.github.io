@@ -384,25 +384,16 @@ function hostExecutePlayPhase(player, cardIds) {
         return;
     }
 
-    // Map strict card IDs to actual cards
     const selectedCards = cardIds.map(id => hand.find(c => c.id === id)).filter(Boolean);
 
-    if (selectedCards.length !== cardIds.length) {
-        if (player === 'guest') conn.send({ type: 'ERROR', msg: "Karten nicht gefunden (Sync-Fehler)." });
+    if (selectedCards.length !== cardIds.length || selectedCards.some(c => c.isSkip)) {
+        if (player === 'guest') conn.send({ type: 'ERROR', msg: "Ungültige Karten." });
         return;
     }
 
-    const phaseDef = PHASES.find(p => p.id === phaseLevel);
+    const grouped = validateAndGroupPhase(selectedCards, phaseLevel);
 
-    if (phaseDef && phaseDef.validate(selectedCards)) {
-        // Group them visually based on the phase definition.
-        // Instead of one big sorted group, we split them smartly.
-        const sorted = sortCardsWildsLast(selectedCards);
-        let grouped = smartGroup(sorted, phaseLevel);
-
-        // Now aesthetically sort each group so wilds are inline
-        grouped = grouped.map(g => sortPhaseGroupInline(g));
-
+    if (grouped) {
         if (player === 'host') {
             grouped.forEach(g => myLaidPhases.push(g));
             myPhaseCompletedThisRound = true;
@@ -418,11 +409,11 @@ function hostExecutePlayPhase(player, cardIds) {
                 if (i > -1) masterGuestHand.splice(i, 1);
             });
         }
-
         if (!checkRoundOverHost()) broadcastStateFromHost();
     } else {
-        if (player === 'guest') conn.send({ type: 'ERROR', msg: "Ungültige Phasenkombination!" });
-        if (player === 'host') alert("Ungültige Phasenkombination!");
+        const msg = "Ungültige Phasenkombination!";
+        if (player === 'guest') conn.send({ type: 'ERROR', msg });
+        if (player === 'host') alert(msg);
     }
 }
 
@@ -431,8 +422,8 @@ function hostExecuteHit(player, cardId, targetOwner, targetGroupIdx) {
     const meCompleted = player === 'host' ? myPhaseCompletedThisRound : opponentPhaseCompletedThisRound;
 
     if (!meCompleted) {
-        if (player === 'guest') conn.send({ type: 'ERROR', msg: "Du musst erst deine eigene Phase auslegen!" });
-        if (player === 'host') alert("Du musst erst deine Phase auslegen!");
+        const msg = "Du musst erst deine eigene Phase auslegen!";
+        if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
         return;
     }
 
@@ -445,102 +436,66 @@ function hostExecuteHit(player, cardId, targetOwner, targetGroupIdx) {
         (player === 'host' ? opponentLaidPhases : myLaidPhases);
 
     const group = targetPhases[targetGroupIdx];
-
     if (!group) return;
 
     if (card.isSkip) {
-        if (player === 'guest') conn.send({ type: 'ERROR', msg: "Aussetzer können nicht angelegt werden." });
-        if (player === 'host') alert("Aussetzer können nicht angelegt werden.");
+        const msg = "Aussetzer können nicht angelegt werden.";
+        if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
         return;
     }
 
-    // --- Strict Hit Validation ---
-    // Identify what kind of group this is
-    if (group.length >= 2) {
-        let isSet = false;
-        let isColor = false;
+    let isSet = false, isColor = false, isRun = false;
+    const realCards = group.filter(c => !c.isWild);
 
-        // Find first non-wild to determine type
-        const realCards = group.filter(c => !c.isWild);
-        if (realCards.length >= 2) {
-            if (realCards[0].value === realCards[1].value) isSet = true;
-            else if (realCards[0].color === realCards[1].color && Math.abs(realCards[0].value - realCards[1].value) !== 1) {
-                // Not a run, but same color -> Color Phase
-                isColor = true;
-            }
-        }
-
-        if (isSet) {
-            // Must match value
-            const targetVal = realCards[0].value;
-            if (!card.isWild && card.value !== targetVal) {
-                const msg = "Falscher Wert für diesen Drilling/Vierling.";
-                if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
-                return;
-            }
-        } else if (isColor) {
-            // Must match color
-            const targetCol = realCards[0].color;
-            if (!card.isWild && card.color !== targetCol) {
-                const msg = "Falsche Farbe für diese Farb-Phase.";
-                if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
-                return;
-            }
-        } else {
-            // Must be a run (Folge)
-            // A run can only be extended by the next higher or next lower number.
-            // Since wilds can be anywhere, we evaluate the logical min/max of the run.
-            let minVal = 99;
-            let maxVal = -1;
-            let curVal = realCards[0].value;
-            let firstRealIdx = group.indexOf(realCards[0]);
-
-            // Reconstruct bounds based on first real card
-            let currentHead = curVal - firstRealIdx; // logical value of group[0]
-            let currentTail = currentHead + group.length - 1; // logical value of group[last]
-
-            if (card.isWild) {
-                // Wild can extend anywhere as long as we don't exceed 12 or go below 1
-                if (currentTail >= 12 && currentHead <= 1) {
-                    const msg = "Folge kann in keine Richtung mehr erweitert werden.";
-                    if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
-                    return;
-                }
-                // Just visually append or prepend
-                if (currentTail < 12) {
-                    group.push(card);
-                } else {
-                    group.unshift(card);
-                }
-            } else {
-                if (card.value === currentTail + 1) {
-                    group.push(card);
-                } else if (card.value === currentHead - 1) {
-                    group.unshift(card);
-                } else {
-                    const msg = `Karte passt nicht. Erwartet: ${currentHead - 1} oder ${currentTail + 1}`;
-                    if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
-                    return;
-                }
-            }
-        }
-    }
-
-    if (card.isWild || group.includes(card)) {
-        // Already appended by wild logic
+    if (realCards.length >= 2) {
+        if (realCards[0].value === realCards[1].value) isSet = true;
+        else if (realCards[0].color === realCards[1].color && Math.abs(realCards[0].value - realCards[1].value) !== 1) isColor = true;
+        else isRun = true;
     } else {
-        // Sets and Colors just append
-        group.push(card);
+        isSet = true;
     }
 
-    // Sort visually after hit
-    const newGroup = sortPhaseGroupInline(group);
-    group.length = 0;
-    group.push(...newGroup);
+    if (isSet) {
+        const targetVal = realCards[0].value;
+        if (!card.isWild && card.value !== targetVal) {
+            const msg = "Falscher Wert für diesen Drilling/Vierling.";
+            if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
+            return;
+        }
+        group.push(card);
+    } else if (isColor) {
+        const targetCol = realCards[0].color;
+        if (!card.isWild && card.color !== targetCol) {
+            const msg = "Falsche Farbe für diese Farb-Phase.";
+            if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
+            return;
+        }
+        group.push(card);
+        group.sort((a, b) => (a.isWild ? 99 : a.value) - (b.isWild ? 99 : b.value));
+    } else { // isRun
+        let firstRealIdx = group.findIndex(c => !c.isWild);
+        let headVal = group[firstRealIdx].value - firstRealIdx;
+        let tailVal = headVal + group.length - 1;
 
-    // ----------------------------
+        if (card.isWild) {
+            if (tailVal >= 12 && headVal <= 1) {
+                const msg = "Folge kann in keine Richtung erweitert werden.";
+                if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
+                return;
+            }
+            if (tailVal < 12) group.push(card);
+            else group.unshift(card);
+        } else {
+            if (card.value === tailVal + 1) group.push(card);
+            else if (card.value === headVal - 1) group.unshift(card);
+            else {
+                const msg = `Karte passt nicht. Erwartet: ${headVal - 1} oder ${tailVal + 1}`;
+                if (player === 'guest') conn.send({ type: 'ERROR', msg }); else alert(msg);
+                return;
+            }
+        }
+    }
 
-    // Remove from hand
     if (player === 'host') {
         myHand.splice(cardIdx, 1);
     } else {
@@ -855,170 +810,99 @@ function getCardLabel(c) {
     return c.value;
 }
 
-// --- Validation Helpers (Permissive for MVP) ---
+// --- Strict Phase 10 Validation & Grouping ---
 
-function sortCardsWildsLast(cards) {
-    return cards.slice().sort((a, b) => {
-        if (a.isWild) return 1;
-        if (b.isWild) return -1;
-        return a.value - b.value;
-    });
-}
+function validateAndGroupPhase(cards, phaseId) {
+    const rules = {
+        1: ['s3', 's3'], 2: ['s3', 'r4'], 3: ['s4', 'r4'], 4: ['r7'], 5: ['r8'],
+        6: ['r9'], 7: ['s4', 's4'], 8: ['c7'], 9: ['s5', 's2'], 10: ['s5', 's3']
+    }[phaseId];
 
-// Splits the laid cards into visual groups (e.g. 2 Drillinge -> 2 groups)
-function smartGroup(sortedCards, phaseId) {
-    if (sortedCards.length === 0) return [[]];
+    let wilds = cards.filter(c => c.isWild);
+    let normals = cards.filter(c => !c.isWild);
 
-    const splits = {
-        1: [3, 3], // 2 Drillinge
-        2: [3, 4], // Drilling + Viererfolge
-        3: [4, 4], // Vierling + Viererfolge
-        4: [sortedCards.length], // Siebenerfolge (alles eins)
-        5: [sortedCards.length], // Achterfolge
-        6: [sortedCards.length], // Neunerfolge
-        7: [4, 4], // 2 Vierlinge
-        8: [sortedCards.length], // 7 gleiche Farbe
-        9: [5, 2], // Fünfling + Zwilling
-        10: [5, 3] // Fünfling + Drilling
-    };
+    const totalNeeded = rules.reduce((acc, r) => acc + parseInt(r.substring(1)), 0);
+    if (cards.length !== totalNeeded) return null;
 
-    const targetSplits = splits[phaseId] || [sortedCards.length];
+    function extractSet(poolWilds, poolNormals, size) {
+        let valMap = {};
+        poolNormals.forEach(c => { valMap[c.value] = (valMap[c.value] || []).concat(c); });
 
-    // For sets, we should ideally group identical values together instead of blind length splitting.
-    // If we just want to split out the sets (Drilling, Vierling, etc), we find the groups of identical numbers first.
-    let groups = [];
-    let remaining = [...sortedCards];
+        let bestVal = -1, bestCount = -1;
+        for (let v in valMap) {
+            if (valMap[v].length > bestCount) { bestCount = valMap[v].length; bestVal = parseInt(v); }
+        }
 
-    // Simple heuristic: if the phase has multiple groups (e.g., [3, 4]), try to extract the sets first.
-    if (targetSplits.length > 1) {
-        targetSplits.forEach(size => {
-            // Find a value that appears `size` times (ignoring wilds for a moment, or including wilds)
-            // Just blind split for MVP, but to prevent splitting a set in half, we can sort by value counts.
-            // Let's do a simple count map.
-            let extracted = [];
-            let valCounts = {};
-            remaining.forEach(c => { if (!c.isWild) valCounts[c.value] = (valCounts[c.value] || 0) + 1; });
+        let extracted = [], rNorms = [...poolNormals], rWilds = [...poolWilds];
+        if (bestVal !== -1) {
+            let matches = rNorms.filter(c => c.value === bestVal);
+            extracted.push(...matches.slice(0, size));
+            rNorms = rNorms.filter(c => !extracted.includes(c));
+        }
+        while (extracted.length < size && rWilds.length > 0) extracted.push(rWilds.pop());
 
-            // Find a value with enough cards (or close enough that wilds can fill)
-            let bestVal = Object.keys(valCounts).find(v => valCounts[v] > 1);
+        if (extracted.length === size) return { group: extracted, remW: rWilds, remN: rNorms };
+        return null;
+    }
 
-            if (size <= 5 && bestVal) { // Trying to extract a SET
-                for (let i = remaining.length - 1; i >= 0; i--) {
-                    if (extracted.length < size && (remaining[i].value == bestVal || remaining[i].isWild)) {
-                        extracted.push(remaining.splice(i, 1)[0]);
-                    }
+    function extractRun(poolWilds, poolNormals, size) {
+        for (let start = 1; start <= 13 - size; start++) {
+            let extracted = [], rNorms = [...poolNormals], rWilds = [...poolWilds], success = true;
+            for (let v = start; v < start + size; v++) {
+                let idx = rNorms.findIndex(c => c.value === v);
+                if (idx !== -1) {
+                    extracted.push(rNorms.splice(idx, 1)[0]);
+                } else if (rWilds.length > 0) {
+                    extracted.push(rWilds.pop()); // Will be perfectly ordered inline!
+                } else {
+                    success = false; break;
                 }
-            } else {
-                // Must be a run or remaining, just slice
-                extracted = remaining.splice(0, size);
             }
-
-            // If we didn't get enough (e.g. only 1 card and rest wilds), fill from remaining.
-            while (extracted.length < size && remaining.length > 0) {
-                extracted.push(remaining.shift());
-            }
-
-            if (extracted.length > 0) groups.push(extracted.reverse());
-        });
-
-        // Put any accidental leftovers into the last group
-        if (remaining.length > 0 && groups.length > 0) {
-            groups[groups.length - 1].push(...remaining);
+            if (success) return { group: extracted, remW: rWilds, remN: rNorms };
         }
-    } else {
-        // Single group phase (Run, Color)
-        groups.push([...remaining]);
+        return null;
     }
 
-    return groups.length > 0 ? groups : [sortedCards];
-}
+    function extractColor(poolWilds, poolNormals, size) {
+        let colMap = {};
+        poolNormals.forEach(c => { colMap[c.color] = (colMap[c.color] || []).concat(c); });
 
-// Visually sorts a group so that wilds appear inline (e.g. 3-4-W-6)
-function sortPhaseGroupInline(group) {
-    if (group.length < 2) return group;
-    const realCards = group.filter(c => !c.isWild);
-    const wilds = group.filter(c => c.isWild);
-    if (realCards.length === 0 || wilds.length === 0) return group; // fully wild or no wilds
-
-    let isSet = false;
-    let isColor = false;
-    if (realCards.length >= 2) {
-        if (realCards[0].value === realCards[1].value) isSet = true;
-        else if (realCards[0].color === realCards[1].color && Math.abs(realCards[0].value - realCards[1].value) !== 1) isColor = true;
-    }
-
-    if (isSet) {
-        // Just stack wilds at the end, doesn't matter visually
-        return [...realCards, ...wilds];
-    } else if (isColor && !isSet && Math.abs(realCards[0].value - (realCards[1] ? realCards[1].value : realCards[0].value)) !== 1) {
-        // Color stack, sort by value and put wilds at end
-        realCards.sort((a, b) => a.value - b.value);
-        return [...realCards, ...wilds];
-    } else {
-        // RUN (Folge). We need to interleave wilds into the holes.
-        realCards.sort((a, b) => a.value - b.value);
-        let result = [];
-        let rIdx = 0;
-        let expectedVal = realCards[0].value;
-        let wildPool = [...wilds];
-
-        while (wildPool.length > 0 || rIdx < realCards.length) {
-            if (rIdx < realCards.length && realCards[rIdx].value === expectedVal) {
-                result.push(realCards[rIdx]);
-                rIdx++;
-            } else if (wildPool.length > 0) {
-                // Hole found, plug with wild
-                result.push(wildPool.pop());
-            } else {
-                // No wilds left but still real cards? 
-                // Should be impossible if validated correctly, but just in case:
-                result.push(realCards[rIdx]);
-                rIdx++;
-            }
-            expectedVal++;
+        let bestCol = null, bestCount = -1;
+        for (let c in colMap) {
+            if (colMap[c].length > bestCount) { bestCount = colMap[c].length; bestCol = c; }
         }
-        return result;
+
+        let extracted = [], rNorms = [...poolNormals], rWilds = [...poolWilds];
+        if (bestCol) {
+            let matches = rNorms.filter(c => c.color === bestCol);
+            extracted.push(...matches.slice(0, size));
+            rNorms = rNorms.filter(c => !extracted.includes(c));
+        }
+        while (extracted.length < size && rWilds.length > 0) extracted.push(rWilds.pop());
+
+        if (extracted.length === size) {
+            extracted.sort((a, b) => (a.isWild ? 99 : a.value) - (b.isWild ? 99 : b.value));
+            return { group: extracted, remW: rWilds, remN: rNorms };
+        }
+        return null;
     }
-}
 
-// Extremely simplified permissive validation for MVP since writing a complete phase 10 validator is 300+ lines.
-// We just verify it has enough cards and no skips.
-function hasNoSkips(cards) {
-    return !cards.some(c => c.isSkip);
-}
+    let cW = wilds, cN = normals, groups = [];
+    let sortedRules = [...rules].sort((a, b) => a[0] === 's' ? -1 : 1);
 
-function checkSets(cards, numSets, setLength, extraReq = null) {
-    if (!hasNoSkips(cards)) return false;
-    let requiredLength = numSets * setLength;
-    if (extraReq) requiredLength += extraReq; // lazy length check
-    if (cards.length < requiredLength) return false;
+    for (let r of sortedRules) {
+        let type = r[0], sz = parseInt(r.substring(1)), res = null;
+        if (type === 's') res = extractSet(cW, cN, sz);
+        else if (type === 'r') res = extractRun(cW, cN, sz);
+        else if (type === 'c') res = extractColor(cW, cN, sz);
 
-    // For V1 MVP: Trust the user mostly, just ensure length is exact
-    return true;
-}
-
-function checkSetAndRun(cards, setLen, runLen) {
-    if (!hasNoSkips(cards)) return false;
-    if (cards.length < setLen + runLen) return false;
-    return true;
-}
-
-function checkRun(cards, len) {
-    if (!hasNoSkips(cards) || cards.length < len) return false;
-    return true;
-}
-
-function checkColorChoice(cards, len) {
-    if (cards.length < len) return false;
-    // Actually check color
-    let mainColor = null;
-    for (const c of cards) {
-        if (c.isSkip) return false;
-        if (c.isWild) continue;
-        if (!mainColor) mainColor = c.color;
-        else if (mainColor !== c.color) return false; // Found mismatch
+        if (!res) return null;
+        groups.push(res.group);
+        cW = res.remW; cN = res.remN;
     }
-    return true;
+
+    if (cW.length === 0 && cN.length === 0) return groups;
+    return null;
 }
 
 // Override back button
