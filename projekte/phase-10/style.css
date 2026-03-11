@@ -28,11 +28,15 @@
     padding: 0;
 }
 
+html {
+    height: 100%;
+}
+
 body {
     font-family: 'Outfit', sans-serif;
     background: radial-gradient(circle at top right, #1e1b4b, var(--bg-dark));
     color: var(--text-main);
-    min-height: 100dvh;
+    min-height: 100%;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
@@ -107,6 +111,7 @@ body {
     border-bottom: 1px solid var(--border-color);
     backdrop-filter: blur(10px);
     z-index: 10;
+    flex-shrink: 0;
 }
 
 .player-info {
@@ -162,12 +167,11 @@ body {
 
 /* Game Board */
 .game-board {
-    flex: 1;
+    flex: 1 0 auto;
     display: flex;
     padding: 1.5rem;
     gap: 2rem;
-    overflow: hidden;
-    min-height: 400px;
+    min-height: 250px;
 }
 
 .piles-area {
@@ -266,7 +270,6 @@ body {
     margin: 1rem 0;
 }
 
-/* Hand & Controls */
 .bottom-area {
     background: var(--bg-panel);
     border-top: 1px solid var(--border-color);
@@ -275,6 +278,7 @@ body {
     flex-direction: column;
     gap: 1.5rem;
     backdrop-filter: blur(10px);
+    flex-shrink: 0;
 }
 
 .hand-controls {
