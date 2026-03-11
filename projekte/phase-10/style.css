@@ -32,11 +32,11 @@ body {
     font-family: 'Outfit', sans-serif;
     background: radial-gradient(circle at top right, #1e1b4b, var(--bg-dark));
     color: var(--text-main);
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    /* Prevent body scroll, handle in areas */
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* Overlays */
@@ -167,6 +167,7 @@ body {
     padding: 1.5rem;
     gap: 2rem;
     overflow: hidden;
+    min-height: 400px;
 }
 
 .piles-area {
