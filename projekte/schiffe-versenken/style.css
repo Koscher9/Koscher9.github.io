@@ -127,6 +127,24 @@ h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #fff; text
 .cell.hit::after {
   content: '💥'; position: absolute; font-size: 1.2rem; filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.8));
 }
+
+.cell.sunk {
+  background: linear-gradient(135deg, #7f1d1d, #450a0a);
+  border: 2px solid #ef4444; 
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4) inset;
+  opacity: 0.8;
+}
+.cell.sunk::after {
+  content: '☠️'; position: absolute; font-size: 1.2rem; filter: sepia(1);
+}
+
+.cell.mine {
+  background: linear-gradient(135deg, #1f2937, #111827); border: 2px dashed #f59e0b;
+}
+.cell.mine::after {
+  content: '💣'; position: absolute; font-size: 1.1rem; filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.8));
+}
+
 .cell.miss { background: linear-gradient(135deg, #3b82f6, #1d4ed8); animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .cell.miss::after {
   content: '🌊'; position: absolute; font-size: 1.1rem; opacity: 0.8;
@@ -142,11 +160,34 @@ h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #fff; text
 .cell.hover-invalid { background: rgba(239, 68, 68, 0.4); box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.4); border: 1px solid rgba(239, 68, 68, 0.8); }
 
 /* Interaction on Battle Board */
-.opponent-board:not(.disabled) .cell:not(.hit):not(.miss):hover { 
+.opponent-board:not(.disabled) .cell:not(.hit):not(.miss):not(.sunk):hover { 
   background: rgba(255,255,255,0.15); cursor: crosshair; transform: scale(1.05); z-index: 2;
   box-shadow: 0 0 10px rgba(255,255,255,0.2);
 }
 .opponent-board.disabled { opacity: 0.7; pointer-events: none; }
+
+.player-board.placing-mine .cell:not(.ship):not(.mine):not(.hit):not(.miss):hover {
+  background: rgba(245, 158, 11, 0.4); border: 1px solid rgba(245, 158, 11, 0.8); cursor: pointer;
+}
+
+/* Points & Powers UI */
+.powers-container {
+  display: flex; gap: 1rem; margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.3);
+  border-radius: 12px; align-items: center; border: 1px solid var(--card-border);
+}
+
+.points-display {
+  font-size: 1.2rem; font-weight: 700; color: #f59e0b;
+}
+
+.power-btn {
+  background: linear-gradient(135deg, #b45309, #78350f); color: white;
+  border: 1px solid #f59e0b; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;
+  font-family: inherit; font-weight: 600; transition: all 0.2s; opacity: 0.5; pointer-events: none;
+}
+.power-btn.ready { opacity: 1; pointer-events: auto; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+.power-btn.ready:hover { transform: scale(1.05); }
+.power-btn.active { box-shadow: 0 0 20px rgba(245, 158, 11, 1); outline: 2px solid white; }
 
 /* Fleet Selection Container */
 .fleet-container {

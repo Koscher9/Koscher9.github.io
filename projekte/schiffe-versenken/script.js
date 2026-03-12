@@ -21,6 +21,10 @@ const turnIndicator = document.getElementById('turn-indicator');
 const winnerText = document.getElementById('winner-text');
 const statusMessage = document.getElementById('status-message');
 const roomBadge = document.getElementById('room-badge');
+const powersUi = document.getElementById('powers-ui');
+const verruecktPointsEl = document.getElementById('verrueckt-points');
+const btnPowerMine = document.getElementById('btn-power-mine');
+const mineStatusText = document.getElementById('mine-status-text');
 
 // URL params and Multiplayer info
 const urlParams = new URLSearchParams(window.location.search);
@@ -46,6 +50,13 @@ let myReady = false;
 let gameStarted = false;
 let myHealth = 0; // total ship cells
 let opponentHealth = 0;
+
+// Verrückt Mode Powers
+let verruecktPoints = 0;
+let placingMine = false;
+let opponentShipHits = {}; // Track opponent ships to detect when they are sunk (we don't know IDs initially, so we just track total health for win condition, but we need ID for sunk state)
+// Actually we can't track opponent's exact ship visually until it's fully sunk, unless they tell us.
+// We will rely on opposite side telling us "You sunk my ship X".
 
 // Ship Definitions
 const shipDefsNormal = [
@@ -149,6 +160,40 @@ function setupEventListeners() {
 
     btnResetPlacement.addEventListener('click', resetPlacement);
     btnReady.addEventListener('click', handleReady);
+    
+    // Powers
+    btnPowerMine.addEventListener('click', () => {
+        if(verruecktPoints >= 3 && isMyTurn) {
+            placingMine = !placingMine;
+            if(placingMine) {
+                btnPowerMine.classList.add('active');
+                mineStatusText.style.display = 'block';
+                battlePlayerBoard.classList.add('placing-mine');
+                // Temporarily disable attack board
+                battleOpponentBoard.classList.add('disabled');
+            } else {
+                cancelMinePlacement();
+            }
+        }
+    });
+    
+    // Listen for clicks on player board during battle (for mine placement)
+    battlePlayerBoard.addEventListener('click', (e) => {
+        if(placingMine && e.target.classList.contains('cell')) {
+            let index = parseInt(e.target.dataset.index);
+            if(!myBoard[index].isShip && !myBoard[index].isHit && !myBoard[index].isMiss && !myBoard[index].isMine) {
+                placeMine(index);
+            }
+        }
+    });
+}
+
+function cancelMinePlacement() {
+    placingMine = false;
+    btnPowerMine.classList.remove('active');
+    mineStatusText.style.display = 'none';
+    battlePlayerBoard.classList.remove('placing-mine');
+    updateTurnIndicator(); // restore board states
 }
 
 function resetPlacement() {
@@ -348,26 +393,59 @@ function checkStartBattle() {
                 battlePlayerBoard.children[i].classList.add('ship');
             }
         }
+        
+        if(gameMode === 'verrueckt') {
+            powersUi.classList.remove('hidden');
+            updatePointsUi();
+        } else {
+            powersUi.classList.add('hidden');
+        }
+        
         showScreen(screenBattle);
         statusMessage.textContent = "Gefecht aktiv!";
         updateTurnIndicator();
     }
 }
 
+function updatePointsUi() {
+    verruecktPointsEl.textContent = verruecktPoints;
+    if(verruecktPoints >= 3) {
+        btnPowerMine.classList.add('ready');
+    } else {
+        btnPowerMine.classList.remove('ready');
+        if(placingMine) cancelMinePlacement();
+    }
+}
+
+function placeMine(index) {
+    verruecktPoints -= 3;
+    myBoard[index].isMine = true;
+    battlePlayerBoard.children[index].classList.add('mine');
+    updatePointsUi();
+    cancelMinePlacement();
+    
+    // Placing a mine ends your turn
+    isMyTurn = false;
+    updateTurnIndicator();
+    if(conn) conn.send({ type: 'MINE_PLACED', index: index });
+}
+
 function updateTurnIndicator() {
+    if(!gameStarted) return;
     if (isMyTurn) {
         turnIndicator.textContent = "Du bist am Zug!";
         turnIndicator.style.background = "var(--accent-green)";
-        battleOpponentBoard.classList.remove('disabled');
+        if(!placingMine) battleOpponentBoard.classList.remove('disabled');
     } else {
         turnIndicator.textContent = "Gegner zielt...";
         turnIndicator.style.background = "var(--accent-red)";
         battleOpponentBoard.classList.add('disabled');
+        cancelMinePlacement();
     }
 }
 
 function handleAttackClick(e) {
-    if (!gameStarted || !isMyTurn) return;
+    if (!gameStarted || !isMyTurn || placingMine) return;
     
     let index = parseInt(e.target.dataset.index);
     if (opponentBoardState[index].isHit || opponentBoardState[index].isMiss) return; // Ignore already attacked cells
@@ -380,16 +458,41 @@ function handleAttackClick(e) {
         conn.send({ type: 'SHOT', index: index });
     } else {
         // Offline test mode: Always Miss to simulate response
-        receiveShotResult(index, false);
+        receiveShotResult(index, false, false, []);
     }
 }
 
-function receiveShotResult(index, isHit) {
+function receiveShotResult(index, isHit, isSunk = false, sunkCoords = [], isMineHit = false, randomShotIndex = null) {
     let cell = battleOpponentBoard.children[index];
+    
+    if (isMineHit) {
+        // We hit a mine!
+        cell.classList.add('mine', 'hit'); // Visual for hitting mine
+        opponentBoardState[index].isHit = true;
+        
+        // Let's visualize the random shot hitting us
+        if(randomShotIndex !== null) {
+            setTimeout(() => {
+                alert("Du hast eine Mine getroffen! Automatischer Beschuss incoming!");
+                handleIncomingShot(randomShotIndex);
+            }, 500);
+        }
+        // Our turn is immediately over
+        isMyTurn = false;
+        updateTurnIndicator();
+        return;
+    }
+    
     if (isHit) {
         opponentBoardState[index].isHit = true;
         cell.classList.add('hit');
         opponentHealth--;
+        
+        if (isSunk) {
+            sunkCoords.forEach(c => {
+                battleOpponentBoard.children[c].classList.add('sunk');
+            });
+        }
         
         // Player gets another turn if they hit
         isMyTurn = true; 
@@ -405,14 +508,62 @@ function receiveShotResult(index, isHit) {
 }
 
 function handleIncomingShot(index) {
+    if(myBoard[index].isMine) {
+        // They hit a mine!
+        myBoard[index].isHit = true; // Mine explodes
+        battlePlayerBoard.children[index].classList.add('hit');
+        
+        // Calculate random shot back
+        let availableTargets = opponentBoardState
+            .map((b, i) => (!b.isHit && !b.isMiss) ? i : -1)
+            .filter(i => i !== -1);
+            
+        let randomShotIndex = availableTargets.length > 0 
+            ? availableTargets[Math.floor(Math.random() * availableTargets.length)] 
+            : null;
+            
+        if (conn) {
+            conn.send({ type: 'SHOT_RESULT', index: index, hit: false, isMineHit: true, randomShotIndex: randomShotIndex });
+            // It's technically still my turn now, since they missed a ship (hit a mine) AND got shot
+            if(randomShotIndex !== null) {
+                // We fake-click the random shot for ourselves in the background
+                setTimeout(() => {
+                    if (conn) conn.send({ type: 'SHOT', index: randomShotIndex });
+                }, 1000);
+            }
+        }
+        isMyTurn = true;
+        updateTurnIndicator();
+        return;
+    }
+    
     let isHit = myBoard[index].isShip;
     let cell = battlePlayerBoard.children[index];
+    let isSunk = false;
+    let sunkCoords = [];
     
     if (isHit) {
         myBoard[index].isHit = true;
         cell.classList.add('hit');
         myHealth--;
+        
+        // Check if sunk
+        let shipId = myBoard[index].shipId;
+        let coordsOfShip = myBoard.map((c, i) => c.shipId === shipId ? i : -1).filter(i => i !== -1);
+        isSunk = coordsOfShip.every(i => myBoard[i].isHit);
+        
+        if (isSunk) {
+            sunkCoords = coordsOfShip;
+            coordsOfShip.forEach(i => battlePlayerBoard.children[i].classList.add('sunk'));
+        }
+        
         // Opponent gets another turn, my turn remains false
+        
+        if(gameMode === 'verrueckt') {
+            verruecktPoints += isSunk ? 2 : 1;
+            updatePointsUi();
+        }
+        
     } else {
         myBoard[index].isMiss = true;
         cell.classList.add('miss');
@@ -421,7 +572,7 @@ function handleIncomingShot(index) {
     }
     
     if (conn) {
-        conn.send({ type: 'SHOT_RESULT', index: index, hit: isHit });
+        conn.send({ type: 'SHOT_RESULT', index: index, hit: isHit, isSunk: isSunk, sunkCoords: sunkCoords });
     }
     
     checkWinCondition();
@@ -494,7 +645,11 @@ function setupConnection() {
         } else if (data.type === 'SHOT') {
             handleIncomingShot(data.index);
         } else if (data.type === 'SHOT_RESULT') {
-            receiveShotResult(data.index, data.hit);
+            receiveShotResult(data.index, data.hit, data.isSunk, data.sunkCoords, data.isMineHit, data.randomShotIndex);
+        } else if (data.type === 'MINE_PLACED') {
+            // Track opponent placed a mine, no specific logic needed except knowing they spent a turn
+            isMyTurn = true;
+            updateTurnIndicator();
         }
     });
 }
