@@ -1,4 +1,4 @@
-const fs = require('fs');
+iconst fs = require('fs');
 const js = fs.readFileSync('script.js', 'utf8');
 // Create a fake DOM to test logic
 const domCode = `
