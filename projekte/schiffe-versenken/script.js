@@ -307,6 +307,8 @@ function getAbsoluteCoords(originIndex, shape, rotation) {
 }
 
 function handlePlacementHover(e) {
+    if (!e.target.classList.contains('cell')) return;
+    
     // Remove old hover states
     Array.from(placementBoard.children).forEach(c => {
         c.classList.remove('hover-valid', 'hover-invalid');
@@ -334,6 +336,8 @@ function handlePlacementHover(e) {
 }
 
 function handlePlacementClick(e) {
+    if (!e.target.classList.contains('cell')) return;
+    
     if (selectedShipId === null) return;
     let ship = shipsToPlace.find(s => s.id === selectedShipId);
     if (!ship || ship.placed) return;
@@ -446,6 +450,7 @@ function updateTurnIndicator() {
 
 function handleAttackClick(e) {
     if (!gameStarted || !isMyTurn || placingMine) return;
+    if (!e.target.classList.contains('cell')) return;
     
     let index = parseInt(e.target.dataset.index);
     if (opponentBoardState[index].isHit || opponentBoardState[index].isMiss) return; // Ignore already attacked cells
@@ -472,10 +477,13 @@ function receiveShotResult(index, isHit, isSunk = false, sunkCoords = [], isMine
         
         // Let's visualize the random shot hitting us
         if(randomShotIndex !== null) {
+            statusMessage.textContent = "💥 Mine getroffen! Feindlicher Gegenfeuerschlag!";
+            statusMessage.style.color = "var(--accent-red)";
             setTimeout(() => {
-                alert("Du hast eine Mine getroffen! Automatischer Beschuss incoming!");
+                statusMessage.style.color = "";
+                if(gameStarted) statusMessage.textContent = "Gefecht aktiv!";
                 handleIncomingShot(randomShotIndex);
-            }, 500);
+            }, 1000);
         }
         // Our turn is immediately over
         isMyTurn = false;
@@ -524,13 +532,7 @@ function handleIncomingShot(index) {
             
         if (conn) {
             conn.send({ type: 'SHOT_RESULT', index: index, hit: false, isMineHit: true, randomShotIndex: randomShotIndex });
-            // It's technically still my turn now, since they missed a ship (hit a mine) AND got shot
-            if(randomShotIndex !== null) {
-                // We fake-click the random shot for ourselves in the background
-                setTimeout(() => {
-                    if (conn) conn.send({ type: 'SHOT', index: randomShotIndex });
-                }, 1000);
-            }
+            // Let the opponent's receiveShotResult trigger the actual shot back against themselves
         }
         isMyTurn = true;
         updateTurnIndicator();
