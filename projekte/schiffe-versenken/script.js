@@ -463,7 +463,7 @@ function handleAttackClick(e) {
         conn.send({ type: 'SHOT', index: index });
     } else {
         // Offline test mode: Always Miss to simulate response
-        receiveShotResult(index, false, false, []);
+        receiveShotResult(index, false, false, [], false, null);
     }
 }
 
@@ -481,7 +481,7 @@ function receiveShotResult(index, isHit, isSunk = false, sunkCoords = [], isMine
             statusMessage.style.color = "var(--accent-red)";
             setTimeout(() => {
                 statusMessage.style.color = "";
-                if(gameStarted) statusMessage.textContent = "Gefecht aktiv!";
+                statusMessage.textContent = "Gefecht aktiv!";
                 handleIncomingShot(randomShotIndex);
             }, 1000);
         }
