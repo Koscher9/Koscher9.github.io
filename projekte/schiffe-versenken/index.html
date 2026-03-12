@@ -62,9 +62,15 @@
 
     <!-- Screen 3: Game Battle Area -->
     <div id="screen-battle" class="screen hidden">
-      <div id="turn-indicator" class="title-badge" style="background: var(--accent-blue); color: white; border: none; font-size: 1rem; padding: 0.5rem 1.5rem; margin-bottom: 2rem;">Warte auf Spielstart...</div>
+      <div id="turn-indicator" class="title-badge" style="background: var(--accent-blue); color: white; border: none; font-size: 1rem; padding: 0.5rem 1.5rem; margin-bottom: 1rem;">Warte auf Spielstart...</div>
       
-      <div class="battle-area">
+      <div id="powers-ui" class="powers-container hidden">
+        <div class="points-display">Verrücktheits-Punkte: <span id="verrueckt-points">0</span></div>
+        <button id="btn-power-mine" class="power-btn">Mine setzen (Cost: 3)</button>
+        <div id="mine-status-text" style="font-size: 0.9rem; color: #a1a1aa; display: none;">Mine bereit! Klicke auf ein freies Feld in **deiner** Flotte.</div>
+      </div>
+      
+      <div class="battle-area" style="margin-top: 2rem;">
         <!-- Player's own board -->
         <div class="board-wrapper">
           <h3>Deine Flotte</h3>
