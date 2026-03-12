@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schiffe versenken</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background-effects"></div>
+  
+  <header>
+    <div class="title-badge" id="room-badge">Room: --- | Role: ---</div>
+    <h1>Schiffe versenken</h1>
+    <p id="status-message" class="subtitle">Initialisiere...</p>
+  </header>
+
+  <main>
+    <!-- Screen 1: Mode Selection (Host only) -->
+    <div id="screen-mode-selection" class="screen hidden">
+      <h2>Wähle den Spielmodus</h2>
+      <div class="modes-container">
+        <button class="mode-btn" id="btn-mode-normal">
+          <h3>Normal</h3>
+          <p>Klassische Schiffsformen (Geraden)</p>
+        </button>
+        <button class="mode-btn" id="btn-mode-verrueckt">
+          <h3>Verrückt</h3>
+          <p>Spezielle Schiffsformen (L, T, Quadrat, Z)</p>
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen 2: Ship Placement -->
+    <div id="screen-placement" class="screen hidden">
+      <h2 id="placement-title">Platziere deine Flotte</h2>
+      <button class="action-btn" id="btn-rotate">Schiff drehen (R-Taste)</button>
+      
+      <div class="placement-area">
+        <!-- Ship container to select ships to place -->
+        <div class="fleet-container" id="fleet-container">
+          <!-- Ships will be generated here -->
+        </div>
+
+        <!-- The player's grid -->
+        <div class="board-container">
+          <div class="board player-board" id="placement-board">
+            <!-- 100 cells generated via JS -->
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+        <button class="action-btn danger" id="btn-reset-placement">Zurücksetzen</button>
+        <button class="action-btn primary hidden" id="btn-ready">Bereit für den Kampf!</button>
+      </div>
+    </div>
+
+    <!-- Screen 3: Game Battle Area -->
+    <div id="screen-battle" class="screen hidden">
+      <div id="turn-indicator" class="title-badge" style="background: var(--accent-blue); color: white; border: none; font-size: 1rem; padding: 0.5rem 1.5rem; margin-bottom: 2rem;">Warte auf Spielstart...</div>
+      
+      <div class="battle-area">
+        <!-- Player's own board -->
+        <div class="board-wrapper">
+          <h3>Deine Flotte</h3>
+          <div class="board player-board" id="battle-player-board"></div>
+        </div>
+        
+        <!-- Opponent's board -->
+        <div class="board-wrapper">
+          <h3>Feindliche Gewässer</h3>
+          <div class="board opponent-board" id="battle-opponent-board"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Screen 4: Game Over -->
+    <div id="screen-game-over" class="screen hidden">
+      <h2 id="winner-text" style="font-size: 4rem; text-align: center; margin-bottom: 2rem; background: linear-gradient(135deg, #fff 20%, var(--accent-blue) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Spielende</h2>
+      <button class="action-btn primary" id="btn-back-lobby" onclick="window.location.href='../../index.html'">Zurück zur Lobby</button>
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
