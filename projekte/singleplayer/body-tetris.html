@@ -243,7 +243,7 @@
     const BOARD_W = COLS * CELL_SIZE; // 340px
     const BOARD_H = ROWS * CELL_SIZE; // 680px
 
-    let board = [];
+    let board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
     let score = 0;
     let isGameOver = false;
     let isGameRunning = false;
@@ -507,7 +507,7 @@
         // --- START LOGIC ---
         // if game is not running and not game over, check if both arms are UP
         if (!isGameRunning && !isGameOver) {
-          if (wristLeft.y < shoulderLeft.y && wristRight.y < shoulderRight.y) {
+          if (wristLeft.y < shoulderLeft.y + 0.1 && wristRight.y < shoulderRight.y + 0.1) {
             startGame();
           }
           return false;
@@ -547,9 +547,9 @@
         }
 
         // --- GESTURE LOGIC ---
-        // Shoulder limit: arm down = roughly hand y > shoulder y (or slightly below)
-        let isLeftArmDown  = wristLeft.y  > shoulderLeft.y  + 0.1;
-        let isRightArmDown = wristRight.y > shoulderRight.y + 0.1;
+        // Shoulder limit: rotate if wrist drops to roughly shoulder height
+        let isLeftArmDown  = wristLeft.y  > shoulderLeft.y  - 0.05;
+        let isRightArmDown = wristRight.y > shoulderRight.y - 0.05;
 
         let activeGesture = "Bewege Körper!";
         let isFastDrop = false;
