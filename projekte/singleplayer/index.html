@@ -267,6 +267,15 @@
       border-color: rgba(59, 130, 246, 0.4);
     }
 
+    .icon-tetris {
+      box-shadow: 0 0 30px rgba(236, 72, 153, 0.3);
+    }
+
+    .game-card:hover .icon-tetris {
+      box-shadow: 0 0 40px rgba(236, 72, 153, 0.6);
+      border-color: rgba(236, 72, 153, 0.4);
+    }
+
     .game-title {
       font-size: 1.8rem;
       font-weight: 700;
@@ -316,9 +325,10 @@
     }
 
     @media (max-width: 768px) {
-      h1 { font-size: 3rem; }
+      h1 { font-size: 2.5rem; }
       .games-grid { grid-template-columns: 1fr; }
-      body { padding: 3rem 1.5rem; }
+      body { padding: 4rem 1rem; }
+      .game-card { padding: 1.5rem 1rem; }
     }
   </style>
 </head>
@@ -356,6 +366,18 @@
         </div>
         <h2 class="game-title">Finger Tracking</h2>
         <p class="game-desc">Präzision gefragt. Steuere die Spiele durch detaillierte Erkennung deiner Hände und Finger.</p>
+        <div class="play-btn">
+          Starten <span class="play-icon">▶</span>
+        </div>
+      </a>
+
+      <!-- Body Tetris -->
+      <a href="body-tetris.html" class="game-card">
+        <div class="game-icon-wrapper icon-tetris">
+          🧱
+        </div>
+        <h2 class="game-title">Body Tetris</h2>
+        <p class="game-desc">Tetris mit vollem Körpereinsatz! Steuere das Feld mit seitlichen Bewegungen und lass Blöcke per Armbewegung fallen.</p>
         <div class="play-btn">
           Starten <span class="play-icon">▶</span>
         </div>
