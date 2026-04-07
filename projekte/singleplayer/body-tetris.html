@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Body Tetris - Singleplayer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- MediaPipe Pose -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: rgba(24, 24, 27, 0.6);
+      --card-border: rgba(236, 72, 153, 0.3);
+      --text-main: #f8fafc;
+      --accent-1: #ec4899;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg);
+      background-image: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.1), transparent 70%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      overflow: hidden; /* Prevent scrolling during game */
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      padding: 0.8rem 1.5rem;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    h1 {
+      margin-top: 1rem;
+      margin-bottom: 2rem;
+      font-size: 3rem;
+      background: linear-gradient(135deg, #fff 20%, #fbcfe8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      z-index: 100;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 1000px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 2rem;
+      backdrop-filter: blur(20px);
+      z-index: 10;
+    }
+
+    .video-view {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 16/9;
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: #000;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    .input_video { display: none; }
+
+    .output_canvas {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      transform: scaleX(-1); /* Mirror effect */
+      object-fit: cover;
+    }
+
+    .status-panel {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+
+    #loading {
+      color: var(--accent-1);
+      font-weight: bold;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+
+    #game-over {
+      display: none;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      padding: 3rem;
+      border-radius: 20px;
+      border: 2px solid var(--accent-1);
+      text-align: center;
+      z-index: 200;
+    }
+
+    #game-over h2 { font-size: 3rem; margin-bottom: 1rem; color: var(--accent-1); }
+    #score-display { font-size: 2rem; margin-bottom: 2rem; }
+    
+    .restart-btn {
+      padding: 1rem 2rem;
+      border-radius: 99px;
+      background: var(--accent-1);
+      color: white;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    .restart-btn:hover { transform: scale(1.05); }
+
+    .hud-controls {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .hud-controls span {
+      background: rgba(236, 72, 153, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2.2rem; margin-bottom: 1rem; }
+      .container { padding: 1rem; }
+      .video-view { aspect-ratio: 3/4; }
+      .back-btn { top: 0.5rem; left: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem; }
+      body { padding: 4rem 1rem 1rem 1rem; }
+      .hud-controls { flex-direction: column; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-btn">◀ Zurück</a>
+
+  <h1>Body Tetris</h1>
+
+  <div class="container">
+    <div class="video-view">
+      <video class="input_video"></video>
+      <!-- We render video, skeleton, AND game onto this canvas -->
+      <canvas class="output_canvas" width="1280" height="720"></canvas>
+      
+      <div id="game-over">
+        <h2>Game Over</h2>
+        <div id="score-display">Score: 0</div>
+        <button class="restart-btn" onclick="startGame()">Neustart</button>
+      </div>
+    </div>
+
+    <div class="status-panel">
+      <p id="loading">Modell wird geladen & Kamera gestartet...</p>
+      <div class="hud-controls" style="display: none;" id="hud">
+        <span id="score-text">Score: 0</span>
+        <span id="gesture-text">Geste: N/A</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const videoElement = document.getElementsByClassName('input_video')[0];
+    const canvasElement = document.getElementsByClassName('output_canvas')[0];
+    const canvasCtx = canvasElement.getContext('2d');
+    
+    const loadingText = document.getElementById('loading');
+    const hud = document.getElementById('hud');
+    const scoreText = document.getElementById('score-text');
+    const gestureText = document.getElementById('gesture-text');
+    const gameOverScreen = document.getElementById('game-over');
+    const finalScoreDisplay = document.getElementById('score-display');
+
+    // --- TETRIS LOGIC ---
+    const COLS = 10;
+    const ROWS = 20;
+    const CELL_SIZE = 34; // 20 * 34 = 680px height
+    const BOARD_W = COLS * CELL_SIZE; // 340px
+    const BOARD_H = ROWS * CELL_SIZE; // 680px
+
+    let board = [];
+    let score = 0;
+    let isGameOver = false;
+
+    // Tetrominoes definitions
+    const SHAPES = [
+      [[1,1,1,1]], // I
+      [[1,1],[1,1]], // O
+      [[0,1,1],[1,1,0]], // S
+      [[1,1,0],[0,1,1]], // Z
+      [[1,0,0],[1,1,1]], // J
+      [[0,0,1],[1,1,1]], // L
+      [[0,1,0],[1,1,1]]  // T
+    ];
+    const COLORS = ["cyan", "yellow", "green", "red", "blue", "orange", "purple"];
+
+    let currentPiece = null;
+    
+    // For fixed static piece parsing
+    // Center X of canvas = 1280 / 2 = 640
+    let lastTime = 0;
+    let dropInterval = 1000;
+    let dropCounter = 0;
+
+    let targetBoardOffset = (1280 - BOARD_W) / 2;
+    let currentBoardOffset = targetBoardOffset;
+    
+    // Gestures state
+    let prevLeftArmDown = false;
+    let prevRightArmDown = false;
+
+    function createEmptyBoard() {
+      return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    }
+
+    function spawnPiece() {
+      const typeId = Math.floor(Math.random() * SHAPES.length);
+      currentPiece = {
+        shape: SHAPES[typeId],
+        color: COLORS[typeId],
+        y: 0,
+        // The x in grid doesn't exist conventionally because the block is FIXED on screen.
+        // Screen X is fixed to Center.
+      };
+    }
+
+    function startGame() {
+      board = createEmptyBoard();
+      score = 0;
+      isGameOver = false;
+      dropInterval = 1000;
+      gameOverScreen.style.display = 'none';
+      scoreText.innerText = `Score: ${score}`;
+      spawnPiece();
+      lastTime = performance.now();
+    }
+
+    // Since the piece visually stays in the center, we compute its effective grid column based on the board's offset
+    function getEffectivePieceGridX() {
+      const screenPieceX = 1280 / 2 - (currentPiece.shape[0].length * CELL_SIZE) / 2;
+      return Math.floor((screenPieceX - currentBoardOffset) / CELL_SIZE) + 1; // +1 to center slightly better
+    }
+
+    // Check collision based on current state
+    function checkCollision(gridX, gridY, shape) {
+      for (let r = 0; r < shape.length; r++) {
+        for (let c = 0; c < shape[r].length; c++) {
+          if (shape[r][c] !== 0) {
+            let newX = gridX + c;
+            let newY = gridY + r;
+            // Walls or floor or overlapping existing block
+            if (newX < 0 || newX >= COLS || newY >= ROWS || (newY >= 0 && board[newY] && board[newY][newX] !== 0)) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    function lockPiece() {
+      const gridX = getEffectivePieceGridX();
+      for (let r = 0; r < currentPiece.shape.length; r++) {
+        for (let c = 0; c < currentPiece.shape[r].length; c++) {
+          if (currentPiece.shape[r][c] !== 0) {
+            let y = currentPiece.y + r;
+            let x = gridX + c;
+            if (y < 0) {
+               isGameOver = true;
+               return;
+            }
+            if (board[y] && x >= 0 && x < COLS) board[y][x] = currentPiece.color;
+          }
+        }
+      }
+    }
+
+    function clearLines() {
+      let linesCleared = 0;
+      for (let r = ROWS - 1; r >= 0; r--) {
+        let isFull = true;
+        for (let c = 0; c < COLS; c++) {
+          if (board[r][c] === 0) { isFull = false; break; }
+        }
+        if (isFull) {
+          board.splice(r, 1);
+          board.unshift(Array(COLS).fill(0));
+          linesCleared++;
+          r++; // check same row again since it sifted down
+        }
+      }
+      if (linesCleared > 0) {
+        score += linesCleared * 100;
+        scoreText.innerText = `Score: ${score}`;
+        dropInterval = Math.max(200, 1000 - (score / 10)); // speed up
+      }
+    }
+
+    function updateTetrisLogic(deltaTime, isFastDrop) {
+      if (isGameOver || !currentPiece) return;
+
+      dropCounter += deltaTime;
+      const threshold = isFastDrop ? 50 : dropInterval;
+
+      if (dropCounter > threshold) {
+        currentPiece.y++;
+        const gridX = getEffectivePieceGridX();
+        
+        if (checkCollision(gridX, currentPiece.y, currentPiece.shape)) {
+          currentPiece.y--; // revert
+          lockPiece();
+          if(!isGameOver) {
+            clearLines();
+            spawnPiece();
+          } else {
+            gameOverScreen.style.display = 'block';
+            finalScoreDisplay.innerText = `Score: ${score}`;
+          }
+        }
+        dropCounter = 0;
+      }
+    }
+
+    function rotatePiece() {
+      if (!currentPiece) return;
+      const sh = currentPiece.shape;
+      const newShape = [];
+      for (let c = 0; c < sh[0].length; c++) {
+        const newRow = [];
+        for (let r = sh.length - 1; r >= 0; r--) {
+          newRow.push(sh[r][c]);
+        }
+        newShape.push(newRow);
+      }
+      const gridX = getEffectivePieceGridX();
+      if (!checkCollision(gridX, currentPiece.y, newShape)) {
+        currentPiece.shape = newShape;
+      }
+    }
+
+    function drawBlock(ctx, x, y, size, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, size, size);
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, size, size);
+      
+      // inner glow/highlight
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.fillRect(x + 2, y + 2, size - 4, size / 4);
+    }
+
+    function drawTetris(ctx) {
+      const topMargin = (720 - BOARD_H) / 2; // Center vertically on 720p canvas
+      
+      // Draw Board Border & Grid lines (semi-transparent)
+      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.fillRect(currentBoardOffset, topMargin, BOARD_W, BOARD_H);
+      
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+      ctx.lineWidth = 1;
+      for (let r = 0; r <= ROWS; r++) {
+        ctx.beginPath();
+        ctx.moveTo(currentBoardOffset, topMargin + r * CELL_SIZE);
+        ctx.lineTo(currentBoardOffset + BOARD_W, topMargin + r * CELL_SIZE);
+        ctx.stroke();
+      }
+      for (let c = 0; c <= COLS; c++) {
+        ctx.beginPath();
+        ctx.moveTo(currentBoardOffset + c * CELL_SIZE, topMargin);
+        ctx.lineTo(currentBoardOffset + c * CELL_SIZE, topMargin + BOARD_H);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = "var(--accent-1)";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(currentBoardOffset, topMargin, BOARD_W, BOARD_H);
+
+      // Draw stored blocks
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (board[r][c] !== 0) {
+            drawBlock(ctx, currentBoardOffset + c * CELL_SIZE, topMargin + r * CELL_SIZE, CELL_SIZE, board[r][c]);
+          }
+        }
+      }
+
+      // Draw current falling piece (Fixed at center visually)
+      if (currentPiece && !isGameOver) {
+        const gridX = getEffectivePieceGridX();
+
+        for (let r = 0; r < currentPiece.shape.length; r++) {
+          for (let c = 0; c < currentPiece.shape[r].length; c++) {
+            if (currentPiece.shape[r][c] !== 0) {
+              const drawX = currentBoardOffset + (gridX + c) * CELL_SIZE; 
+              const drawY = topMargin + (currentPiece.y + r) * CELL_SIZE;
+              drawBlock(ctx, drawX, drawY, CELL_SIZE, currentPiece.color);
+            }
+          }
+        }
+        
+        // Draw ghost piece (where it will land)
+        let ghostY = currentPiece.y;
+        while (!checkCollision(gridX, ghostY + 1, currentPiece.shape)) {
+           ghostY++;
+        }
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        for (let r = 0; r < currentPiece.shape.length; r++) {
+          for (let c = 0; c < currentPiece.shape[r].length; c++) {
+            if (currentPiece.shape[r][c] !== 0) {
+              ctx.fillRect(currentBoardOffset + (gridX + c) * CELL_SIZE, topMargin + (ghostY + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            }
+          }
+        }
+      }
+    }
+
+
+    function handleGesturesAndMovement(poseLandmarks) {
+        // Arm movement logic for left/right board shift
+        const shoulderLeft = poseLandmarks[11];
+        const shoulderRight = poseLandmarks[12];
+        const hipLeft = poseLandmarks[23];
+        const hipRight = poseLandmarks[24];
+        
+        const wristLeft = poseLandmarks[15];
+        const wristRight = poseLandmarks[16];
+
+        if (shoulderLeft && shoulderRight) {
+          // X-center of the body
+          const bodyX = (shoulderLeft.x + shoulderRight.x) / 2;
+          
+          // Map bodyX (0.3 to 0.7 maybe) to targetBoardOffset
+          // When bodyX is 0.5 (center), board offset should be 470
+          // Inverse mapping because the canvas is mirrored.
+          const normalizedShift = (bodyX - 0.5) * -2.0; // range roughly -1.0 to 1.0 depending on how much they move
+          const maxShiftPixels = 400; // max distance board can move left/right
+          
+          targetBoardOffset = ((1280 - BOARD_W) / 2) + (normalizedShift * maxShiftPixels);
+          // Clamp offset so board doesn't fly off screen
+          targetBoardOffset = Math.max(10, Math.min(targetBoardOffset, 1280 - BOARD_W - 10));
+          
+          // Smooth the movement
+          currentBoardOffset += (targetBoardOffset - currentBoardOffset) * 0.1;
+        }
+
+        let isLeftArmDown = false;
+        let isRightArmDown = false;
+
+        // Check if wrists are below hips (y values are higher downwards)
+        if(wristLeft && wristLeft.visibility > 0.5 && hipLeft) {
+             isLeftArmDown = wristLeft.y > hipLeft.y - 0.1;
+        }
+        if(wristRight && wristRight.visibility > 0.5 && hipRight) {
+             isRightArmDown = wristRight.y > hipRight.y - 0.1;
+        }
+
+        let activeGesture = "Bewege Körper!";
+        let isFastDrop = false;
+
+        if (isLeftArmDown && isRightArmDown) {
+             activeGesture = "Fast Drop (Beide unten)";
+             isFastDrop = true;
+        } 
+        else if (isLeftArmDown || isRightArmDown) {
+             activeGesture = isLeftArmDown ? "Rotation (Links unten)" : "Rotation (Rechts unten)";
+             
+             // Trigger rotation only ONCE when arm transitions to down
+             if((isLeftArmDown && !prevLeftArmDown) || (isRightArmDown && !prevRightArmDown)) {
+                 rotatePiece();
+             }
+        }
+        
+        gestureText.innerText = `Geste: ${activeGesture}`;
+
+        prevLeftArmDown = isLeftArmDown;
+        prevRightArmDown = isRightArmDown;
+
+        return isFastDrop;
+    }
+
+
+    // --- MEDIAPIPE LOGIC ---
+    function onResults(results) {
+      if (loadingText.style.display !== 'none') {
+        loadingText.style.display = 'none';
+        hud.style.display = 'flex';
+        startGame();
+      }
+
+      const now = performance.now();
+      const deltaTime = now - lastTime;
+      lastTime = now;
+
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+      // 1. Draw Camera Feed
+      canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+      // Darken the video slightly so tetris pops
+      canvasCtx.fillStyle = "rgba(0,0,0,0.3)";
+      canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+
+      let isFastDrop = false;
+
+      // 2. Draw Skeleton & handle gestures
+      if (results.poseLandmarks) {
+        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
+                       {color: 'rgba(255,255,255,0.4)', lineWidth: 2});
+        drawLandmarks(canvasCtx, results.poseLandmarks,
+                      {color: 'rgba(236,72,153,0.6)', lineWidth: 1, radius: 2});
+        
+        // Return if user is doing fast drop
+        isFastDrop = handleGesturesAndMovement(results.poseLandmarks);
+      }
+
+      // 3. Update & Draw Tetris Logic
+      updateTetrisLogic(deltaTime, isFastDrop);
+      drawTetris(canvasCtx);
+
+      canvasCtx.restore();
+    }
+
+    const pose = new Pose({locateFile: (file) => {
+      return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+    }});
+
+    pose.setOptions({
+      modelComplexity: 1,
+      smoothLandmarks: true,
+      enableSegmentation: false,
+      smoothSegmentation: false,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+
+    pose.onResults(onResults);
+
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await pose.send({image: videoElement});
+      },
+      width: 1280,
+      height: 720
+    });
+    camera.start();
+  </script>
+</body>
+</html>
