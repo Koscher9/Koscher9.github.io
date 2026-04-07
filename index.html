@@ -117,6 +117,31 @@
       backdrop-filter: blur(10px);
     }
 
+    .singleplayer-btn {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      padding: 0.8rem 1.5rem;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .singleplayer-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
     h1 {
       font-size: 4rem;
       font-weight: 800;
@@ -338,6 +363,10 @@
 <body>
 
   <header>
+    <a href="projekte/singleplayer/index.html" class="singleplayer-btn">
+      👤 Singleplayer
+    </a>
+
     <div class="title-badge">Multiplayer</div>
     <h1 id="main-title">Lobby</h1>
     <p class="subtitle" id="main-subtitle">Hoste ein Spiel oder trete einem Freund bei, um gemeinsam zu spielen.</p>

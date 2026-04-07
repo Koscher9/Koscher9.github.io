@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singleplayer Tracking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: rgba(24, 24, 27, 0.6);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #a1a1aa;
+      --accent-1: #10b981; /* Green focus for fitness/singleplayer */
+      --accent-2: #3b82f6;
+      --accent-3: #8b5cf6;
+      --card-radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.15), transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.15), transparent 50%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5rem 1.5rem;
+      overflow-x: hidden;
+    }
+
+    /* Ambient animated background bubbles */
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      width: 40vw;
+      height: 40vw;
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    body::before {
+      top: -10vw;
+      left: -10vw;
+      background: var(--accent-1);
+      animation: drift 20s infinite alternate ease-in-out;
+    }
+
+    body::after {
+      bottom: -10vw;
+      right: -10vw;
+      background: var(--accent-3);
+      animation: drift 25s infinite alternate-reverse ease-in-out;
+    }
+
+    @keyframes drift {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+      100% {
+        transform: translate(5vw, 5vw) scale(1.1);
+      }
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      padding: 0.8rem 1.5rem;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 4rem;
+      animation: fadeDown 1s ease-out;
+      position: relative;
+      z-index: 10;
+    }
+
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .title-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #fff 20%, #a7f3d0 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+    }
+
+    .subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    main {
+      width: 100%;
+      max-width: 900px;
+      animation: fadeUp 1s ease-out 0.2s backwards;
+      position: relative;
+      z-index: 10;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 2rem;
+    }
+
+    .game-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--card-radius);
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      text-decoration: none;
+      color: var(--text-main);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .game-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .game-card:hover::before {
+      opacity: 1;
+    }
+
+    .game-icon-wrapper {
+      width: 90px;
+      height: 90px;
+      border-radius: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 3rem;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 1;
+      transition: all 0.4s ease;
+    }
+
+    .game-card:hover .game-icon-wrapper {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    /* Glow Effekte */
+    .icon-arm {
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+    }
+
+    .game-card:hover .icon-arm {
+      box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .icon-finger {
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+    }
+
+    .game-card:hover .icon-finger {
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .game-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .game-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .play-btn {
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 2rem;
+      border-radius: 99px;
+      background: white;
+      color: black;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .game-card:hover .play-btn {
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      color: white;
+      padding: 0.8rem 2.5rem;
+      box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .play-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .game-card:hover .play-icon {
+      transform: translateX(5px);
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 3rem; }
+      .games-grid { grid-template-columns: 1fr; }
+      body { padding: 3rem 1.5rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <a href="../../index.html" class="back-btn">
+    ◀ Zurück
+  </a>
+
+  <header>
+    <div class="title-badge">Body Tracking</div>
+    <h1 id="main-title">Singleplayer</h1>
+    <p class="subtitle">Wähle deinen Trainings-Modus und steuere Spiele nur mit deinem Körper! Nutze deine Webcam, um loszulegen.</p>
+  </header>
+
+  <main>
+    <div class="games-grid">
+      <!-- Arm Tracking -->
+      <a href="arm-tracking.html" class="game-card">
+        <div class="game-icon-wrapper icon-arm">
+          💪
+        </div>
+        <h2 class="game-title">Arm Tracking</h2>
+        <p class="game-desc">Voller Körpereinsatz! Ideal für Cardio, Workouts oder Hanteltraining. Dein Skelett wird erkannt und steuert das Spiel.</p>
+        <div class="play-btn">
+          Starten <span class="play-icon">▶</span>
+        </div>
+      </a>
+
+      <!-- Finger Tracking -->
+      <a href="finger-tracking.html" class="game-card">
+        <div class="game-icon-wrapper icon-finger">
+          🖐️
+        </div>
+        <h2 class="game-title">Finger Tracking</h2>
+        <p class="game-desc">Präzision gefragt. Steuere die Spiele durch detaillierte Erkennung deiner Hände und Finger.</p>
+        <div class="play-btn">
+          Starten <span class="play-icon">▶</span>
+        </div>
+      </a>
+    </div>
+  </main>
+
+</body>
+
+</html>
