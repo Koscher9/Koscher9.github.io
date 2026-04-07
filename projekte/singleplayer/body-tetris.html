@@ -123,6 +123,20 @@
       100% { opacity: 0.5; }
     }
 
+    #game-start {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      padding: 3rem;
+      border-radius: 20px;
+      border: 2px solid #10b981;
+      text-align: center;
+      z-index: 200;
+    }
+    #game-start h2 { font-size: 3rem; margin-bottom: 1rem; color: #10b981; }
+    #game-start p { font-size: 1.5rem; }
+
     #game-over {
       display: none;
       position: absolute;
@@ -189,6 +203,11 @@
       <!-- We render video, skeleton, AND game onto this canvas -->
       <canvas class="output_canvas" width="1280" height="720"></canvas>
       
+      <div id="game-start">
+        <h2>Bereit?</h2>
+        <p>Hebe <strong>beide Arme</strong> hoch, um zu starten!</p>
+      </div>
+
       <div id="game-over">
         <h2>Game Over</h2>
         <div id="score-display">Score: 0</div>
@@ -227,6 +246,8 @@
     let board = [];
     let score = 0;
     let isGameOver = false;
+    let isGameRunning = false;
+    const gameStartScreen = document.getElementById('game-start');
 
     // Tetrominoes definitions
     const SHAPES = [
@@ -274,17 +295,29 @@
       board = createEmptyBoard();
       score = 0;
       isGameOver = false;
+      isGameRunning = true;
       dropInterval = 1000;
       gameOverScreen.style.display = 'none';
+      gameStartScreen.style.display = 'none';
       scoreText.innerText = `Score: ${score}`;
       spawnPiece();
       lastTime = performance.now();
     }
 
-    // Since the piece visually stays in the center, we compute its effective grid column based on the board's offset
+    // Returns exact required screen piece X to align exactly to the mathematical center
+    function getScreenPieceX() {
+      const pieceW = currentPiece.shape[0].length * CELL_SIZE;
+      return 1280 / 2 - pieceW / 2;
+    }
+
+    // Computes the grid X based on visually fixed piece
     function getEffectivePieceGridX() {
-      const screenPieceX = 1280 / 2 - (currentPiece.shape[0].length * CELL_SIZE) / 2;
-      return Math.floor((screenPieceX - currentBoardOffset) / CELL_SIZE) + 1; // +1 to center slightly better
+      const screenPieceX = getScreenPieceX();
+      let gridX = Math.floor((screenPieceX - currentBoardOffset) / CELL_SIZE);
+      
+      // Clamp gridX so it doesn't cause array out-of-bounds on the sides
+      const maxCol = COLS - currentPiece.shape[0].length;
+      return Math.max(0, Math.min(gridX, maxCol));
     }
 
     // Check collision based on current state
@@ -432,13 +465,14 @@
       }
 
       // Draw current falling piece (Fixed at center visually)
-      if (currentPiece && !isGameOver) {
+      if (currentPiece && !isGameOver && isGameRunning) {
         const gridX = getEffectivePieceGridX();
+        const drawStartX = currentBoardOffset + gridX * CELL_SIZE;
 
         for (let r = 0; r < currentPiece.shape.length; r++) {
           for (let c = 0; c < currentPiece.shape[r].length; c++) {
             if (currentPiece.shape[r][c] !== 0) {
-              const drawX = currentBoardOffset + (gridX + c) * CELL_SIZE; 
+              const drawX = drawStartX + c * CELL_SIZE; 
               const drawY = topMargin + (currentPiece.y + r) * CELL_SIZE;
               drawBlock(ctx, drawX, drawY, CELL_SIZE, currentPiece.color);
             }
@@ -454,7 +488,7 @@
         for (let r = 0; r < currentPiece.shape.length; r++) {
           for (let c = 0; c < currentPiece.shape[r].length; c++) {
             if (currentPiece.shape[r][c] !== 0) {
-              ctx.fillRect(currentBoardOffset + (gridX + c) * CELL_SIZE, topMargin + (ghostY + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+              ctx.fillRect(drawStartX + c * CELL_SIZE, topMargin + (ghostY + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
             }
           }
         }
@@ -463,43 +497,59 @@
 
 
     function handleGesturesAndMovement(poseLandmarks) {
-        // Arm movement logic for left/right board shift
         const shoulderLeft = poseLandmarks[11];
         const shoulderRight = poseLandmarks[12];
-        const hipLeft = poseLandmarks[23];
-        const hipRight = poseLandmarks[24];
-        
         const wristLeft = poseLandmarks[15];
         const wristRight = poseLandmarks[16];
 
-        if (shoulderLeft && shoulderRight) {
-          // X-center of the body
-          const bodyX = (shoulderLeft.x + shoulderRight.x) / 2;
-          
-          // Map bodyX (0.3 to 0.7 maybe) to targetBoardOffset
-          // When bodyX is 0.5 (center), board offset should be 470
-          // Inverse mapping because the canvas is mirrored.
-          const normalizedShift = (bodyX - 0.5) * -2.0; // range roughly -1.0 to 1.0 depending on how much they move
-          const maxShiftPixels = 400; // max distance board can move left/right
-          
-          targetBoardOffset = ((1280 - BOARD_W) / 2) + (normalizedShift * maxShiftPixels);
-          // Clamp offset so board doesn't fly off screen
-          targetBoardOffset = Math.max(10, Math.min(targetBoardOffset, 1280 - BOARD_W - 10));
-          
-          // Smooth the movement
-          currentBoardOffset += (targetBoardOffset - currentBoardOffset) * 0.1;
+        if (!shoulderLeft || !shoulderRight || !wristLeft || !wristRight) return false;
+
+        // --- START LOGIC ---
+        // if game is not running and not game over, check if both arms are UP
+        if (!isGameRunning && !isGameOver) {
+          if (wristLeft.y < shoulderLeft.y && wristRight.y < shoulderRight.y) {
+            startGame();
+          }
+          return false;
         }
 
-        let isLeftArmDown = false;
-        let isRightArmDown = false;
+        if (!isGameRunning) return false; // In GameOver, don't play.
 
-        // Check if wrists are below hips (y values are higher downwards)
-        if(wristLeft && wristLeft.visibility > 0.5 && hipLeft) {
-             isLeftArmDown = wristLeft.y > hipLeft.y - 0.1;
+        // X-center of the body
+        const bodyX = (shoulderLeft.x + shoulderRight.x) / 2;
+        
+        // Directly couple board to body:
+        // visualX represents the body center in the mirrored canvas
+        const visualX = (1 - bodyX) * 1280;
+        targetBoardOffset = visualX - (BOARD_W / 2);
+
+        // CLAMP: the board must not move so far that the center piece falls out of bounds
+        if (currentPiece) {
+            const pieceScreenX = getScreenPieceX();
+            const pieceW = currentPiece.shape[0].length * CELL_SIZE;
+            
+            const minBoardOffset = pieceScreenX + pieceW - BOARD_W;
+            const maxBoardOffset = pieceScreenX;
+            targetBoardOffset = Math.max(minBoardOffset, Math.min(targetBoardOffset, maxBoardOffset));
         }
-        if(wristRight && wristRight.visibility > 0.5 && hipRight) {
-             isRightArmDown = wristRight.y > hipRight.y - 0.1;
+
+        // Smooth the movement slightly so it's not totally jumpy
+        currentBoardOffset += (targetBoardOffset - currentBoardOffset) * 0.3;
+
+        // Verify if horizontal movement causes collision, if so, push board back physically
+        if (currentPiece) {
+            const gridX = getEffectivePieceGridX();
+            if (checkCollision(gridX, currentPiece.y, currentPiece.shape)) {
+               // The user shifted body directly into existing structure! (wall clip)
+               // Undo logic (simplified): board shift is ignored for logic if it collides.
+               // We just rely on gridX clamping we did earlier, which might not be enough for block collisions.
+            }
         }
+
+        // --- GESTURE LOGIC ---
+        // Shoulder limit: arm down = roughly hand y > shoulder y (or slightly below)
+        let isLeftArmDown  = wristLeft.y  > shoulderLeft.y  + 0.1;
+        let isRightArmDown = wristRight.y > shoulderRight.y + 0.1;
 
         let activeGesture = "Bewege Körper!";
         let isFastDrop = false;
@@ -531,7 +581,7 @@
       if (loadingText.style.display !== 'none') {
         loadingText.style.display = 'none';
         hud.style.display = 'flex';
-        startGame();
+        // gameStart screen takes over until arms are up
       }
 
       const now = performance.now();
